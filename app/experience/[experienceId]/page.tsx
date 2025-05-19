@@ -1,10 +1,5 @@
 "use client";
 
-//import { getWhopApi } from "./whop-api";
-import { useEffect, useState } from "react";
-
-"use client";
-
 import { useEffect, useState } from "react";
 
 // ✅ Move type definition **above** Dashboard()
