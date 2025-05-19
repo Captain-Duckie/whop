@@ -25,7 +25,6 @@ export default function Dashboard() {
     }, []);
 
 
-    // Function to calculate wins, losses, and win percentage for a play type
     const calculateStats = (playType: string) => {
         const filteredData = selectedLeague && data.length > 0
             ? data.filter(row => row.League === selectedLeague)
