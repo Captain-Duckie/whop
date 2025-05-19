@@ -3,6 +3,14 @@
 //import { getWhopApi } from "./whop-api";
 import { useEffect, useState } from "react";
 
+// ✅ Explicitly define the expected structure for data
+type SoccerData = {
+    League: string;
+    [key: string]: any;
+};
+
+const [data, setData] = useState<SoccerData[]>([]);
+
 export default function Dashboard() {
     const [data, setData] = useState<{ League: string; [key: string]: any }[]>([]);
     const [selectedLeague, setSelectedLeague] = useState(""); // Stores League filter
@@ -23,8 +31,9 @@ export default function Dashboard() {
 
     // Function to calculate wins, losses, and win percentage for a play type
     const calculateStats = (playType: string) => {
-        const filteredData = selectedLeague ? data.filter(row => row.League === selectedLeague) : data;
-
+        const filteredData = selectedLeague && data.length > 0
+            ? data.filter(row => row.League === selectedLeague)
+            : data;
         const playData = filteredData.filter(row => row[playType] === "Over");
         const wins = playData.filter(row => row["FH Goals"] >= 1).length;
         const losses = playData.filter(row => row["FH Goals"] === 0).length;
@@ -59,7 +68,7 @@ export default function Dashboard() {
                 value={selectedLeague}
             >
                 <option value="">All Leagues</option>
-                {[...new Set(data.map(row => row.League))].map((league) => (
+                {data.length > 0 && [...new Set(data.map(row => row.League))].map((league) => (
                     <option key={league} value={league}>{league}</option>
                 ))}
             </select>
