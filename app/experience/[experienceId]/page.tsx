@@ -33,7 +33,6 @@ export default function Dashboard() {
         const playData = filteredData.filter(row => row[playType] === "Over");
         const wins = playData.filter(row => Number(row["FH Goals"]) >= 1).length;
         const losses = playData.filter(row => Number(row["FH Goals"]) === 0).length;
-        const winPercentage = ((wins / playData.length) * 100).toFixed(2);
         const winPercentageNum = parseFloat(((wins / playData.length) * 100).toFixed(2));
         
         return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
@@ -41,11 +40,8 @@ export default function Dashboard() {
         const calculateSharedStats = () => {
         const filteredData = selectedLeague ? data.filter(row => row.League === selectedLeague) : data;
         const sharedData = filteredData.filter(row => row["M FHG"] === "Over" && row["SN FHG"] === "Over");
-    
         const wins = sharedData.filter(row => Number(row["FH Goals"]) >= 1).length;
         const losses = sharedData.filter(row => Number(row["FH Goals"]) === 0).length;
-    
-        // ✅ Use only **one** instance of winPercentageNum
         const winPercentageNum = sharedData.length > 0 
             ? parseFloat(((wins / sharedData.length) * 100).toFixed(2)) 
             : 0;
