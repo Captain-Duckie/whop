@@ -17,7 +17,7 @@ export async function GET() {
         return new Response(JSON.stringify(jsonData), {
             headers: { 'Content-Type': 'application/json' }
         });
-    } catch (error) {
+    } catch {
         return new Response(
             JSON.stringify({ error: 'Failed to load data' }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
