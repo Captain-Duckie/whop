@@ -31,8 +31,8 @@ export default function Dashboard() {
             ? data.filter(row => row.League === selectedLeague)
             : data;
         const playData = filteredData.filter(row => row[playType] === "Over");
-        const wins = playData.filter(row => row["FH Goals"] >= 1).length;
-        const losses = playData.filter(row => row["FH Goals"] === 0).length;
+        const wins = playData.filter(row => Number(row["FH Goals"]) >= 1).length;
+        const losses = playData.filter(row => Number(row["FH Goals"]) === 0).length;
         const winPercentage = ((wins / playData.length) * 100).toFixed(2);
 
         return { wins, losses, winPercentage: isNaN(winPercentage) ? "N/A" : `${winPercentage}%` };
@@ -42,8 +42,8 @@ export default function Dashboard() {
 
         // Find rows where BOTH "M FHG" AND "SN FHG" are "Over"
         const sharedData = filteredData.filter(row => row["M FHG"] === "Over" && row["SN FHG"] === "Over");
-        const wins = sharedData.filter(row => row["FH Goals"] >= 1).length;
-        const losses = sharedData.filter(row => row["FH Goals"] === 0).length;
+        const wins = playData.filter(row => Number(row["FH Goals"]) >= 1).length;
+        const losses = playData.filter(row => Number(row["FH Goals"]) === 0).length;
         const winPercentageNum = parseFloat(((wins / playData.length) * 100).toFixed(2));
         return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
     };
