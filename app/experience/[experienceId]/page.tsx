@@ -22,7 +22,7 @@ export default function Dashboard() {
 
 
     // Function to calculate wins, losses, and win percentage for a play type
-    const calculateStats = (playType) => {
+    const calculateStats = (playType: string) => {
         const filteredData = selectedLeague ? data.filter(row => row.League === selectedLeague) : data;
 
         const playData = filteredData.filter(row => row[playType] === "Over");
@@ -39,9 +39,8 @@ export default function Dashboard() {
         const sharedData = filteredData.filter(row => row["M FHG"] === "Over" && row["SN FHG"] === "Over");
         const wins = sharedData.filter(row => row["FH Goals"] >= 1).length;
         const losses = sharedData.filter(row => row["FH Goals"] === 0).length;
-        const winPercentage = ((wins / sharedData.length) * 100).toFixed(2);
-
-        return { wins, losses, winPercentage: isNaN(winPercentage) ? "N/A" : `${winPercentage}%` };
+        const winPercentageNum = parseFloat(((wins / playData.length) * 100).toFixed(2));
+        return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
     };
 
     // Generate stats for each play type
