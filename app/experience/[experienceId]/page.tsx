@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-    const [data, setData] = useState([]);
+    const [data, setData] = useState<{ League: string; [key: string]: any }[]>([]);
     const [selectedLeague, setSelectedLeague] = useState(""); // Stores League filter
 
     useEffect(() => {
