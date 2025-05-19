@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import * as XLSX from 'xlsx';
 
-export async function GET(req) {
+export async function GET() {
     try {
         // Path to your Excel file
         const filePath = path.join(process.cwd(), 'public', 'Soccer Records.xlsx');
