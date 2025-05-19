@@ -3,17 +3,19 @@
 //import { getWhopApi } from "./whop-api";
 import { useEffect, useState } from "react";
 
-// ✅ Explicitly define the expected structure for data
+"use client";
+
+import { useEffect, useState } from "react";
+
+// ✅ Move type definition **above** Dashboard()
 type SoccerData = {
     League: string;
-    [key: string]: any;
+    [key: string]: string | number;
 };
 
-const [data, setData] = useState<SoccerData[]>([]);
-
 export default function Dashboard() {
-    const [data, setData] = useState<{ League: string; [key: string]: any }[]>([]);
-    const [selectedLeague, setSelectedLeague] = useState(""); // Stores League filter
+    const [data, setData] = useState<SoccerData[]>([]); 
+    const [selectedLeague, setSelectedLeague] = useState("");
 
     useEffect(() => {
         fetch("/api/data")
@@ -26,7 +28,6 @@ export default function Dashboard() {
             .then(data => console.log("Whop User Data:", data))
             .catch(console.error);
     }, []);
-
 
 
     // Function to calculate wins, losses, and win percentage for a play type
