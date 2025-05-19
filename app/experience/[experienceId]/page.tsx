@@ -1,6 +1,6 @@
 "use client";
 
-import { getWhopApi } from "./whop-api";
+//import { getWhopApi } from "./whop-api";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
