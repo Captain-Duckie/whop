@@ -39,13 +39,18 @@ export default function Dashboard() {
     };
     const calculateSharedStats = () => {
         const filteredData = selectedLeague ? data.filter(row => row.League === selectedLeague) : data;
-
-        // Find rows where BOTH "M FHG" AND "SN FHG" are "Over"
+    
+        // ✅ Find rows where BOTH "M FHG" AND "SN FHG" are "Over"
         const sharedData = filteredData.filter(row => row["M FHG"] === "Over" && row["SN FHG"] === "Over");
-        const wins = playData.filter(row => Number(row["FH Goals"]) >= 1).length;
-        const losses = playData.filter(row => Number(row["FH Goals"]) === 0).length;
-        const winPercentageNum = parseFloat(((wins / playData.length) * 100).toFixed(2));
-        return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
+    
+        // ✅ Use sharedData in calculations (instead of playData)
+        const wins = sharedData.filter(row => Number(row["FH Goals"]) >= 1).length;
+        const losses = sharedData.filter(row => Number(row["FH Goals"]) === 0).length;
+        const winPercentageNum = sharedData.length > 0 
+            ? parseFloat(((wins / sharedData.length) * 100).toFixed(2)) 
+            : 0;
+    
+        return { wins, losses, winPercentage: winPercentageNum > 0 ? `${winPercentageNum}%` : "N/A" };
     };
 
     // Generate stats for each play type
