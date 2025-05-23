@@ -40,38 +40,39 @@ export default function Dashboard() {
         });
       };
     
-
+    const filteredData = filterByTeam(
+      selectedLeague ? data.filter(row => row.League === selectedLeague) : data
+    );
 
     const calculateStats = (playType: string) => {
-        const filteredData = selectedLeague && data.length > 0
-            ? data.filter(row => row.League === selectedLeague)
-            : data;
         const playData = filteredData.filter(row => row[playType] === "Over");
         const wins = playData.filter(row => Number(row["FH Goals"]) >= 1).length;
         const losses = playData.filter(row => Number(row["FH Goals"]) === 0).length;
-        const winPercentageNum = parseFloat(((wins / playData.length) * 100).toFixed(2));
-        
+        const winPercentageNum = playData.length > 0 
+          ? parseFloat(((wins / playData.length) * 100).toFixed(2)) 
+          : 0;
+      
         return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
-    };
+      };
         const calculateSharedStats = () => {
-        const filteredData = selectedLeague ? data.filter(row => row.League === selectedLeague) : data;
         const sharedData = filteredData.filter(row => row["M FHG"] === "Over" && row["SN FHG"] === "Over");
         const wins = sharedData.filter(row => Number(row["FH Goals"]) >= 1).length;
         const losses = sharedData.filter(row => Number(row["FH Goals"]) === 0).length;
         const winPercentageNum = sharedData.length > 0 
-            ? parseFloat(((wins / sharedData.length) * 100).toFixed(2)) 
-            : 0;
-    
+          ? parseFloat(((wins / sharedData.length) * 100).toFixed(2)) 
+          : 0;
+      
         return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
-    };
+      };
 
     // Generate stats for each play type
     const supernovaStats = calculateStats("SN FHG");
     const mythosStats = calculateStats("M FHG");
     const sharedStats = calculateSharedStats();
-    const teamsForLeague = selectedLeague
-        ? data.filter((row) => row.League === selectedLeague)
-        : data;
+    const teamsForLeague = filterByTeam(
+      selectedLeague ? data.filter((row) => row.League === selectedLeague) : data
+    );
+
     const uniqueTeams = [
         ...new Set(teamsForLeague.flatMap((row) => [row["Home Team"], row["Away Team"]]))
         ].filter(Boolean) // remove null/undefined
