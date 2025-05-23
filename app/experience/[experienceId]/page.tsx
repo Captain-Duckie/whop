@@ -4,13 +4,17 @@ import { useEffect, useState } from "react";
 
 // ✅ Move type definition **above** Dashboard()
 type SoccerData = {
-    League: string;
-    [key: string]: string | number;
+  League: string;
+  "Home Team": string;
+  "Away Team": string;
+  [key: string]: string | number;
 };
 
 export default function Dashboard() {
     const [data, setData] = useState<SoccerData[]>([]); 
     const [selectedLeague, setSelectedLeague] = useState("");
+    const [selectedTeam, setSelectedTeam] = useState("");
+    const [teamFilterType, setTeamFilterType] = useState("All");
 
     useEffect(() => {
         fetch("/api/data")
@@ -23,6 +27,19 @@ export default function Dashboard() {
             .then(data => console.log("Whop User Data:", data))
             .catch(console.error);
     }, []);
+
+    const filterByTeam = (data: SoccerData[]) => {
+        if (!selectedTeam) return data;
+    
+        return data.filter((row) => {
+          if (teamFilterType === "Home") return row["Home Team"] === selectedTeam;
+          if (teamFilterType === "Away") return row["Away Team"] === selectedTeam;
+          if (teamFilterType === "All")
+            return row["Home Team"] === selectedTeam || row["Away Team"] === selectedTeam;
+          return true;
+        });
+      };
+    
 
 
     const calculateStats = (playType: string) => {
@@ -52,6 +69,13 @@ export default function Dashboard() {
     const supernovaStats = calculateStats("SN FHG");
     const mythosStats = calculateStats("M FHG");
     const sharedStats = calculateSharedStats();
+    const teamsForLeague = selectedLeague
+        ? data.filter((row) => row.League === selectedLeague)
+        : data;
+    const uniqueTeams = [
+        ...new Set(teamsForLeague.flatMap((row) => [row["Home Team"], row["Away Team"]]))
+        ].filter(Boolean) // remove null/undefined
+        .sort((a, b) => a.localeCompare(b)); // sort alphabetically
 
     return (
         <div className="p-6">
@@ -68,6 +92,30 @@ export default function Dashboard() {
                     <option key={league} value={league}>{league}</option>
                 ))}
             </select>
+            <select
+                className="mb-4 p-2 border bg-gray-800 text-white"
+                onChange={(e) => setSelectedTeam(e.target.value)}
+                value={selectedTeam}
+                >
+                <option value="">All Teams</option>
+                {uniqueTeams.map((team) => (
+                    <option key={team} value={team}>
+                    {team}
+                    </option>
+                ))}
+                </select>
+        
+        
+              {/* Team Filter Type Dropdown */}
+              <select
+                className="mb-4 p-2 border bg-gray-800 text-white"
+                onChange={(e) => setTeamFilterType(e.target.value)}
+                value={teamFilterType}
+              >
+                <option value="All">All Games</option>
+                <option value="Home">Home Team</option>
+                <option value="Away">Away Team</option>
+              </select>
 
             {/* Summary Statistic Cards */}
             <div className="grid grid-cols-3 gap-4">
