@@ -84,7 +84,7 @@ export default function Dashboard() {
 
             {/* League Filter Dropdown */}
             <select
-                className="mb-4 p-2 border"
+                className="mb-4 p-2 border bg-gray-800 text-white"
                 onChange={(e) => setSelectedLeague(e.target.value)}
                 value={selectedLeague}
             >
