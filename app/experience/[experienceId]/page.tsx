@@ -283,6 +283,7 @@ export default function Dashboard() {
                     <p className="text-sm">Losses: {sharedFTCStats.under.losses}</p>
                     <p className="text-sm">Win %: {sharedFTCStats.under.winPercentage}</p>
                 </div>
+            </div>
             {/* Full-Time Goal Stats - Second Row */}
             <h2 className="text-2xl font-bold mt-6 mb-2">Full Time Goals - Backend Only</h2>
             <div className="grid grid-cols-3 gap-4 mt-4">
@@ -322,7 +323,7 @@ export default function Dashboard() {
                     <p className="text-sm">Losses: {sharedFTGoalStats.under.losses}</p>
                     <p className="text-sm">Win %: {sharedFTGoalStats.under.winPercentage}</p>
                 </div>
+            </div>
         </div>
-        
     );
 }
