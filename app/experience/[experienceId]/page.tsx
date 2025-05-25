@@ -176,156 +176,162 @@ export default function Dashboard() {
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Mythos Soccer Dashboard</h1>
+        <h1 className="text-2xl font-bold mb-4">Mythos Soccer Dashboard</h1>
 
-            {/* League Filter Dropdown */}
+        {/* League Filter Dropdown */}
+        <select
+            className="mb-4 p-2 border bg-gray-800 text-white"
+            onChange={(e) => setSelectedLeague(e.target.value)}
+            value={selectedLeague}
+        >
+            <option value="">All Leagues</option>
+            {data.length > 0 &&
+            [...new Set(data.map((row) => row.League))].map((league) => (
+                <option key={league} value={league}>
+                {league}
+                </option>
+            ))}
+        </select>
+
+
             <select
-                className="mb-4 p-2 border bg-gray-800 text-white"
-                onChange={(e) => setSelectedLeague(e.target.value)}
-                value={selectedLeague}
+            className="mb-4 p-2 border bg-gray-800 text-white"
+            onChange={(e) => setSelectedTeam(e.target.value)}
+            value={selectedTeam}
             >
-                <option value="">All Leagues</option>
-                {data.length > 0 && [...new Set(data.map(row => row.League))].map((league) => (
-                    <option key={league} value={league}>{league}</option>
-                ))}
+            <option value="">All Teams</option>
+            {uniqueTeams.map((team) => (
+                <option key={team} value={team}>
+                {team}
+                </option>
+            ))}
             </select>
-            <select
-                className="mb-4 p-2 border bg-gray-800 text-white"
-                onChange={(e) => setSelectedTeam(e.target.value)}
-                value={selectedTeam}
-                >
-                <option value="">All Teams</option>
-                {uniqueTeams.map((team) => (
-                    <option key={team} value={team}>
-                    {team}
-                    </option>
-                ))}
-                </select>
-        
-        
-              {/* Team Filter Type Dropdown */}
-              <select
-                className="mb-4 p-2 border bg-gray-800 text-white"
-                onChange={(e) => setTeamFilterType(e.target.value)}
-                value={teamFilterType}
-              >
-                <option value="All">All Games</option>
-                <option value="Home">Home Team</option>
-                <option value="Away">Away Team</option>
-              </select>
 
-              {/* Summary Statistic Cards */}
-              <h2 className="text-2xl font-bold mt-6 mb-2">First Half Goals</h2>
-              <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">Supernova</h2>
-                      <p className="text-sm">Wins: {supernovaStats.wins}</p>
-                      <p className="text-sm">Losses: {supernovaStats.losses}</p>
-                      <p className="text-sm">Win %: {supernovaStats.winPercentage}</p>
-                  </div>
-      
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">Mythos</h2>
-                      <p className="text-sm">Wins: {mythosStats.wins}</p>
-                      <p className="text-sm">Losses: {mythosStats.losses}</p>
-                      <p className="text-sm">Win %: {mythosStats.winPercentage}</p>
-                  </div>
-      
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">Shared</h2>
-                      <p className="text-sm">Wins: {sharedStats.wins}</p>
-                      <p className="text-sm">Losses: {sharedStats.losses}</p>
-                      <p className="text-sm">Win %: {sharedStats.winPercentage}</p>
-                  </div>
-              </div>
-              {/* Full-Time Goal Stats - Second Row */}
-              <h2 className="text-2xl font-bold mt-6 mb-2">Full Time Goals - Backend Only</h2>
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTG Over - Mythos</h2>
-                      <p className="text-sm">Wins: {fullTimeGoalStatsMythos.over.wins}</p>
-                      <p className="text-sm">Losses: {fullTimeGoalStatsMythos.over.losses}</p>
-                      <p className="text-sm">Win %: {fullTimeGoalStatsMythos.over.winPercentage}</p>
-                  </div>
-      
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTG Under - Mythos</h2>
-                      <p className="text-sm">Wins: {fullTimeGoalStatsMythos.under.wins}</p>
-                      <p className="text-sm">Losses: {fullTimeGoalStatsMythos.under.losses}</p>
-                      <p className="text-sm">Win %: {fullTimeGoalStatsMythos.under.winPercentage}</p>
-                  </div>
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTG Over - SuperNova</h2>
-                      <p className="text-sm">Wins: {fullTimeGoalStatsSuperNova.over.wins}</p>
-                      <p className="text-sm">Losses: {fullTimeGoalStatsSuperNova.over.losses}</p>
-                      <p className="text-sm">Win %: {fullTimeGoalStatsSuperNova.over.winPercentage}</p>
-                  </div>
-      
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTG Under - SuperNova</h2>
-                      <p className="text-sm">Wins: {fullTimeGoalStatsSuperNova.under.wins}</p>
-                      <p className="text-sm">Losses: {fullTimeGoalStatsSuperNova.under.losses}</p>
-                      <p className="text-sm">Win %: {fullTimeGoalStatsSuperNova.under.winPercentage}</p>
-                  </div>
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTG Over - Shared</h2>
-                      <p className="text-sm">Wins: {sharedFTGoalStats.over.wins}</p>
-                      <p className="text-sm">Losses: {sharedFTGoalStats.over.losses}</p>
-                      <p className="text-sm">Win %: {sharedFTGoalStats.over.winPercentage}</p>
-                  </div>
-      
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTG Under - Shared</h2>
-                      <p className="text-sm">Wins: {sharedFTGoalStats.under.wins}</p>
-                      <p className="text-sm">Losses: {sharedFTGoalStats.under.losses}</p>
-                      <p className="text-sm">Win %: {sharedFTGoalStats.under.winPercentage}</p>
-                  </div>
-              </div>
-              {/* Full-Time Corner Stats - 3rd Row */}
-              <h2 className="text-2xl font-bold mt-6 mb-2">Full Time Corners - Overs are Backend Only</h2>
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTC Over - SuperNova</h2>
-                      <p className="text-sm">Wins: {fullTimeCornerStatsSuperNova.over.wins}</p>
-                      <p className="text-sm">Losses: {fullTimeCornerStatsSuperNova.over.losses}</p>
-                      <p className="text-sm">Win %: {fullTimeCornerStatsSuperNova.over.winPercentage}</p>
-                  </div>
-      
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTC Over - Mythos</h2>
-                      <p className="text-sm">Wins: {fullTimeCornerStatsMythos.over.wins}</p>
-                      <p className="text-sm">Losses: {fullTimeCornerStatsMythos.over.losses}</p>
-                      <p className="text-sm">Win %: {fullTimeCornerStatsMythos.over.winPercentage}</p>
-                  </div>
-      
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTC Over - Shared</h2>
-                      <p className="text-sm">Wins: {sharedFTCStats.over.wins}</p>
-                      <p className="text-sm">Losses: {sharedFTCStats.over.losses}</p>
-                      <p className="text-sm">Win %: {sharedFTCStats.over.winPercentage}</p>
-                  </div>
-      
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTC Under - SuperNova</h2>
-                      <p className="text-sm">Wins: {fullTimeCornerStatsSuperNova.under.wins}</p>
-                      <p className="text-sm">Losses: {fullTimeCornerStatsSuperNova.under.losses}</p>
-                      <p className="text-sm">Win %: {fullTimeCornerStatsSuperNova.under.winPercentage}</p>
-                  </div>
-      
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTC Under - Mythos</h2>
-                      <p className="text-sm">Wins: {fullTimeCornerStatsMythos.under.wins}</p>
-                      <p className="text-sm">Losses: {fullTimeCornerStatsMythos.under.losses}</p>
-                      <p className="text-sm">Win %: {fullTimeCornerStatsMythos.under.winPercentage}</p>
-                  </div>
-      
-                  <div className="p-4 border rounded shadow">
-                      <h2 className="text-lg font-semibold">FTC Under - Shared</h2>
-                      <p className="text-sm">Wins: {sharedFTCStats.under.wins}</p>
-                      <p className="text-sm">Losses: {sharedFTCStats.under.losses}</p>
-                      <p className="text-sm">Win %: {sharedFTCStats.under.winPercentage}</p>
-                  </div>
-              </div>
-          </div>
+
+        {/* Team Filter Type Dropdown */}
+        <select
+            className="mb-4 p-2 border bg-gray-800 text-white"
+            onChange={(e) => setTeamFilterType(e.target.value)}
+            value={teamFilterType}
+        >
+            <option value="All">All Games</option>
+            <option value="Home">Home Team</option>
+            <option value="Away">Away Team</option>
+        </select>
+
+        {/* Summary Statistic Cards */}
+        <h2 className="text-2xl font-bold mt-6 mb-2">First Half Goals</h2>
+        <div className="grid grid-cols-3 gap-4">
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">Supernova</h2>
+                <p className="text-sm">Wins: {supernovaStats.wins}</p>
+                <p className="text-sm">Losses: {supernovaStats.losses}</p>
+                <p className="text-sm">Win %: {supernovaStats.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">Mythos</h2>
+                <p className="text-sm">Wins: {mythosStats.wins}</p>
+                <p className="text-sm">Losses: {mythosStats.losses}</p>
+                <p className="text-sm">Win %: {mythosStats.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">Shared</h2>
+                <p className="text-sm">Wins: {sharedStats.wins}</p>
+                <p className="text-sm">Losses: {sharedStats.losses}</p>
+                <p className="text-sm">Win %: {sharedStats.winPercentage}</p>
+            </div>
+        </div>
+        {/* Full-Time Goal Stats - Second Row */}
+        <h2 className="text-2xl font-bold mt-6 mb-2">Full Time Goals - Backend Only</h2>
+        <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Over - Mythos</h2>
+                <p className="text-sm">Wins: {fullTimeGoalStatsMythos.over.wins}</p>
+                <p className="text-sm">Losses: {fullTimeGoalStatsMythos.over.losses}</p>
+                <p className="text-sm">Win %: {fullTimeGoalStatsMythos.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Under - Mythos</h2>
+                <p className="text-sm">Wins: {fullTimeGoalStatsMythos.under.wins}</p>
+                <p className="text-sm">Losses: {fullTimeGoalStatsMythos.under.losses}</p>
+                <p className="text-sm">Win %: {fullTimeGoalStatsMythos.under.winPercentage}</p>
+            </div>
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Over - SuperNova</h2>
+                <p className="text-sm">Wins: {fullTimeGoalStatsSuperNova.over.wins}</p>
+                <p className="text-sm">Losses: {fullTimeGoalStatsSuperNova.over.losses}</p>
+                <p className="text-sm">Win %: {fullTimeGoalStatsSuperNova.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Under - SuperNova</h2>
+                <p className="text-sm">Wins: {fullTimeGoalStatsSuperNova.under.wins}</p>
+                <p className="text-sm">Losses: {fullTimeGoalStatsSuperNova.under.losses}</p>
+                <p className="text-sm">Win %: {fullTimeGoalStatsSuperNova.under.winPercentage}</p>
+            </div>
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Over - Shared</h2>
+                <p className="text-sm">Wins: {sharedFTGoalStats.over.wins}</p>
+                <p className="text-sm">Losses: {sharedFTGoalStats.over.losses}</p>
+                <p className="text-sm">Win %: {sharedFTGoalStats.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Under - Shared</h2>
+                <p className="text-sm">Wins: {sharedFTGoalStats.under.wins}</p>
+                <p className="text-sm">Losses: {sharedFTGoalStats.under.losses}</p>
+                <p className="text-sm">Win %: {sharedFTGoalStats.under.winPercentage}</p>
+            </div>
+        </div>
+        {/* Full-Time Corner Stats - 3rd Row */}
+        <h2 className="text-2xl font-bold mt-6 mb-2">Full Time Corners - Overs are Backend Only</h2>
+        <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Over - SuperNova</h2>
+                <p className="text-sm">Wins: {fullTimeCornerStatsSuperNova.over.wins}</p>
+                <p className="text-sm">Losses: {fullTimeCornerStatsSuperNova.over.losses}</p>
+                <p className="text-sm">Win %: {fullTimeCornerStatsSuperNova.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Over - Mythos</h2>
+                <p className="text-sm">Wins: {fullTimeCornerStatsMythos.over.wins}</p>
+                <p className="text-sm">Losses: {fullTimeCornerStatsMythos.over.losses}</p>
+                <p className="text-sm">Win %: {fullTimeCornerStatsMythos.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Over - Shared</h2>
+                <p className="text-sm">Wins: {sharedFTCStats.over.wins}</p>
+                <p className="text-sm">Losses: {sharedFTCStats.over.losses}</p>
+                <p className="text-sm">Win %: {sharedFTCStats.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Under - SuperNova</h2>
+                <p className="text-sm">Wins: {fullTimeCornerStatsSuperNova.under.wins}</p>
+                <p className="text-sm">Losses: {fullTimeCornerStatsSuperNova.under.losses}</p>
+                <p className="text-sm">Win %: {fullTimeCornerStatsSuperNova.under.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Under - Mythos</h2>
+                <p className="text-sm">Wins: {fullTimeCornerStatsMythos.under.wins}</p>
+                <p className="text-sm">Losses: {fullTimeCornerStatsMythos.under.losses}</p>
+                <p className="text-sm">Win %: {fullTimeCornerStatsMythos.under.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Under - Shared</h2>
+                <p className="text-sm">Wins: {sharedFTCStats.under.wins}</p>
+                <p className="text-sm">Losses: {sharedFTCStats.under.losses}</p>
+                <p className="text-sm">Win %: {sharedFTCStats.under.winPercentage}</p>
+            </div>
+        </div>
+    </div>
+        
     );
 }
