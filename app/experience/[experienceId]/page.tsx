@@ -13,8 +13,16 @@ type SoccerData = {
 export default function Dashboard() {
     const [data, setData] = useState<SoccerData[]>([]); 
     const [selectedLeague, setSelectedLeague] = useState("");
-    const [selectedTeam, setSelectedTeam] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
     const [teamFilterType, setTeamFilterType] = useState("All");
+
+    const clearFilters = () => {
+        setSelectedLeague(""); // Reset league selection
+        setSelectedTeams([]); // Reset selected teams
+        setTeamFilterType("All"); // Reset team filter type
+    };
+
 
     useEffect(() => {
         fetch("/api/data")
@@ -29,16 +37,16 @@ export default function Dashboard() {
     }, []);
 
     const filterByTeam = (data: SoccerData[]) => {
-        if (!selectedTeam) return data;
-    
+        if (!selectedTeams.length) return data; // Return all data if no team is selected
+
         return data.filter((row) => {
-          if (teamFilterType === "Home") return row["Home Team"] === selectedTeam;
-          if (teamFilterType === "Away") return row["Away Team"] === selectedTeam;
-          if (teamFilterType === "All")
-            return row["Home Team"] === selectedTeam || row["Away Team"] === selectedTeam;
-          return true;
+            if (teamFilterType === "Home") return selectedTeams.includes(row["Home Team"]);
+            if (teamFilterType === "Away") return selectedTeams.includes(row["Away Team"]);
+            if (teamFilterType === "All")
+                return selectedTeams.includes(row["Home Team"]) || selectedTeams.includes(row["Away Team"]);
+            return true;
         });
-      };
+    };
     
     const filteredData = filterByTeam(
       selectedLeague ? data.filter(row => row.League === selectedLeague) : data
@@ -178,46 +186,85 @@ export default function Dashboard() {
         <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">Mythos Soccer Dashboard</h1>
 
-        {/* League Filter Dropdown */}
-        <select
-            className="mb-4 p-2 border bg-gray-800 text-white"
-            onChange={(e) => setSelectedLeague(e.target.value)}
-            value={selectedLeague}
-        >
-            <option value="">All Leagues</option>
-            {data.length > 0 &&
-            [...new Set(data.map((row) => row.League))].map((league) => (
-                <option key={league} value={league}>
-                {league}
-                </option>
-            ))}
-        </select>
-
-
-            <select
-            className="mb-4 p-2 border bg-gray-800 text-white"
-            onChange={(e) => setSelectedTeam(e.target.value)}
-            value={selectedTeam}
-            >
-            <option value="">All Teams</option>
-            {uniqueTeams.map((team) => (
-                <option key={team} value={team}>
-                {team}
-                </option>
-            ))}
+        {/* League Filter */}
+        <div className="mb-4">
+            <select className="p-2 border bg-gray-800 text-white" onChange={(e) => setSelectedLeague(e.target.value)} value={selectedLeague}>
+                <option value="">All Leagues</option>
+                {data.length > 0 &&
+                    [...new Set(data.map((row) => row.League))].map((league) => (
+                        <option key={league} value={league}>{league}</option>
+                    ))}
             </select>
+        </div>
 
-
-        {/* Team Filter Type Dropdown */}
-        <select
-            className="mb-4 p-2 border bg-gray-800 text-white"
-            onChange={(e) => setTeamFilterType(e.target.value)}
-            value={teamFilterType}
+        {/* Select Teams Button */}
+        <button 
+            onClick={() => {
+                if (!selectedLeague) {
+                    alert("Please select a league first!");
+                    return;
+                }
+                setModalOpen(true);
+            }} 
+            className="mb-4 p-2 border bg-gray-800 text-white rounded"
         >
-            <option value="All">All Games</option>
-            <option value="Home">Home Team</option>
-            <option value="Away">Away Team</option>
-        </select>
+            Select Teams
+        </button>
+        {/* Team Filter Type */}
+        <div className="mb-4">
+            <select className="p-2 border bg-gray-800 text-white" onChange={(e) => setTeamFilterType(e.target.value)} value={teamFilterType}>
+                <option value="All">All Games</option>
+                <option value="Home">Home Team</option>
+                <option value="Away">Away Team</option>
+            </select>
+        </div>
+
+        <button 
+            onClick={clearFilters} 
+            className="mb-4 p-2 border bg-red-600 text-white rounded hover:bg-red-700"
+        >
+            Clear Filters
+        </button>
+
+        {/* Modal for Selecting Teams */}
+        {modalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                <div className="bg-gray-800 text-white p-6 rounded-lg shadow-lg w-80 relative">
+                    {/* Close Button */}
+                    <button 
+                        onClick={() => setModalOpen(false)} 
+                        className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+                    >
+                        ✖
+                    </button>
+
+                    <h2 className="text-lg font-semibold mb-4">Select Teams</h2>
+                    <div className="grid grid-cols-2 gap-2">
+                        {uniqueTeams.map((team) => (
+                            <label key={team} className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedTeams.includes(team)}
+                                    onChange={(e) => {
+                                        if (e.target.checked) {
+                                            setSelectedTeams([...selectedTeams, team]);
+                                        } else {
+                                            setSelectedTeams(selectedTeams.filter((t) => t !== team));
+                                        }
+                                    }}
+                                />
+                                <span>{team}</span>
+                            </label>
+                        ))}
+                    </div>
+                    <div className="flex justify-end mt-4">
+                        <button onClick={() => setModalOpen(false)} className="p-2 bg-blue-600 text-white rounded">
+                            Done
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
 
         {/* Summary Statistic Cards */}
         <h2 className="text-2xl font-bold mt-6 mb-2">First Half Goals</h2>
