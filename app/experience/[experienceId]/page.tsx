@@ -322,7 +322,6 @@ export default function Dashboard() {
                     <p className="text-sm">Losses: {sharedFTGoalStats.under.losses}</p>
                     <p className="text-sm">Win %: {sharedFTGoalStats.under.winPercentage}</p>
                 </div>
-            </div>
         </div>
         
     );
