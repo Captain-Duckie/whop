@@ -215,115 +215,117 @@ export default function Dashboard() {
               </select>
 
             {/* Summary Statistic Cards */}
-            <h2 className="text-2xl font-bold mt-6 mb-2">First Half Goals</h2>
-            <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Supernova</h2>
-                    <p className="text-sm">Wins: {supernovaStats.wins}</p>
-                    <p className="text-sm">Losses: {supernovaStats.losses}</p>
-                    <p className="text-sm">Win %: {supernovaStats.winPercentage}</p>
-                </div>
-    
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Mythos</h2>
-                    <p className="text-sm">Wins: {mythosStats.wins}</p>
-                    <p className="text-sm">Losses: {mythosStats.losses}</p>
-                    <p className="text-sm">Win %: {mythosStats.winPercentage}</p>
-                </div>
-    
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Shared</h2>
-                    <p className="text-sm">Wins: {sharedStats.wins}</p>
-                    <p className="text-sm">Losses: {sharedStats.losses}</p>
-                    <p className="text-sm">Win %: {sharedStats.winPercentage}</p>
-                </div>
+        <h2 className="text-2xl font-bold mt-6 mb-2">First Half Goals</h2>
+        <div className="grid grid-cols-3 gap-4">
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">Supernova</h2>
+                <p className="text-sm">Wins: {supernovaStats.wins}</p>
+                <p className="text-sm">Losses: {supernovaStats.losses}</p>
+                <p className="text-sm">Win %: {supernovaStats.winPercentage}</p>
             </div>
-            {/* Full-Time Corner Stats - 3rd Row */}
-            <h2 className="text-2xl font-bold mt-6 mb-2">Full Time Corners - Overs are Backend Only</h2>
-            <div className="grid grid-cols-3 gap-4 mt-4">
-    
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Over - SuperNova</h2>
-                    <p className="text-sm">Wins: {fullTimeCornerStatsSuperNova.over.wins}</p>
-                    <p className="text-sm">Losses: {fullTimeCornerStatsSuperNova.over.losses}</p>
-                    <p className="text-sm">Win %: {fullTimeCornerStatsSuperNova.over.winPercentage}</p>
-                </div>
-    
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Over - Mythos</h2>
-                    <p className="text-sm">Wins: {fullTimeCornerStatsMythos.over.wins}</p>
-                    <p className="text-sm">Losses: {fullTimeCornerStatsMythos.over.losses}</p>
-                    <p className="text-sm">Win %: {fullTimeCornerStatsMythos.over.winPercentage}</p>
-                </div>
-    
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Over - Shared</h2>
-                    <p className="text-sm">Wins: {sharedFTCStats.over.wins}</p>
-                    <p className="text-sm">Losses: {sharedFTCStats.over.losses}</p>
-                    <p className="text-sm">Win %: {sharedFTCStats.over.winPercentage}</p>
-                </div>
-    
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Under - SuperNova</h2>
-                    <p className="text-sm">Wins: {fullTimeCornerStatsSuperNova.under.wins}</p>
-                    <p className="text-sm">Losses: {fullTimeCornerStatsSuperNova.under.losses}</p>
-                    <p className="text-sm">Win %: {fullTimeCornerStatsSuperNova.under.winPercentage}</p>
-                </div>
-    
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Under - Mythos</h2>
-                    <p className="text-sm">Wins: {fullTimeCornerStatsMythos.under.wins}</p>
-                    <p className="text-sm">Losses: {fullTimeCornerStatsMythos.under.losses}</p>
-                    <p className="text-sm">Win %: {fullTimeCornerStatsMythos.under.winPercentage}</p>
-                </div>
-    
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Under - Shared</h2>
-                    <p className="text-sm">Wins: {sharedFTCStats.under.wins}</p>
-                    <p className="text-sm">Losses: {sharedFTCStats.under.losses}</p>
-                    <p className="text-sm">Win %: {sharedFTCStats.under.winPercentage}</p>
-                </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">Mythos</h2>
+                <p className="text-sm">Wins: {mythosStats.wins}</p>
+                <p className="text-sm">Losses: {mythosStats.losses}</p>
+                <p className="text-sm">Win %: {mythosStats.winPercentage}</p>
             </div>
-            {/* Full-Time Goal Stats - Second Row */}
-            <h2 className="text-2xl font-bold mt-6 mb-2">Full Time Goals - Backend Only</h2>
-            <div className="grid grid-cols-3 gap-4 mt-4">
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Over - SuperNova</h2>
-                    <p className="text-sm">Wins: {fullTimeGoalStatsSuperNova.over.wins}</p>
-                    <p className="text-sm">Losses: {fullTimeGoalStatsSuperNova.over.losses}</p>
-                    <p className="text-sm">Win %: {fullTimeGoalStatsSuperNova.over.winPercentage}</p>
-                </div>
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Over - Mythos</h2>
-                    <p className="text-sm">Wins: {fullTimeGoalStatsMythos.over.wins}</p>
-                    <p className="text-sm">Losses: {fullTimeGoalStatsMythos.over.losses}</p>
-                    <p className="text-sm">Win %: {fullTimeGoalStatsMythos.over.winPercentage}</p>
-                </div>
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Over - Shared</h2>
-                    <p className="text-sm">Wins: {sharedFTGoalStats.over.wins}</p>
-                    <p className="text-sm">Losses: {sharedFTGoalStats.over.losses}</p>
-                    <p className="text-sm">Win %: {sharedFTGoalStats.over.winPercentage}</p>
-                </div>
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Under - SuperNova</h2>
-                    <p className="text-sm">Wins: {fullTimeGoalStatsSuperNova.under.wins}</p>
-                    <p className="text-sm">Losses: {fullTimeGoalStatsSuperNova.under.losses}</p>
-                    <p className="text-sm">Win %: {fullTimeGoalStatsSuperNova.under.winPercentage}</p>
-                </div>
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Under - Mythos</h2>
-                    <p className="text-sm">Wins: {fullTimeGoalStatsMythos.under.wins}</p>
-                    <p className="text-sm">Losses: {fullTimeGoalStatsMythos.under.losses}</p>
-                    <p className="text-sm">Win %: {fullTimeGoalStatsMythos.under.winPercentage}</p>
-                </div>
-                <div className="p-4 border rounded shadow">
-                    <h2 className="text-lg font-semibold">Under - Shared</h2>
-                    <p className="text-sm">Wins: {sharedFTGoalStats.under.wins}</p>
-                    <p className="text-sm">Losses: {sharedFTGoalStats.under.losses}</p>
-                    <p className="text-sm">Win %: {sharedFTGoalStats.under.winPercentage}</p>
-                </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">Shared</h2>
+                <p className="text-sm">Wins: {sharedStats.wins}</p>
+                <p className="text-sm">Losses: {sharedStats.losses}</p>
+                <p className="text-sm">Win %: {sharedStats.winPercentage}</p>
             </div>
         </div>
+        {/* Full-Time Goal Stats - Second Row */}
+        <h2 className="text-2xl font-bold mt-6 mb-2">Full Time Goals - Backend Only</h2>
+        <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Over - Mythos</h2>
+                <p className="text-sm">Wins: {fullTimeGoalStatsMythos.over.wins}</p>
+                <p className="text-sm">Losses: {fullTimeGoalStatsMythos.over.losses}</p>
+                <p className="text-sm">Win %: {fullTimeGoalStatsMythos.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Under - Mythos</h2>
+                <p className="text-sm">Wins: {fullTimeGoalStatsMythos.under.wins}</p>
+                <p className="text-sm">Losses: {fullTimeGoalStatsMythos.under.losses}</p>
+                <p className="text-sm">Win %: {fullTimeGoalStatsMythos.under.winPercentage}</p>
+            </div>
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Over - SuperNova</h2>
+                <p className="text-sm">Wins: {fullTimeGoalStatsSuperNova.over.wins}</p>
+                <p className="text-sm">Losses: {fullTimeGoalStatsSuperNova.over.losses}</p>
+                <p className="text-sm">Win %: {fullTimeGoalStatsSuperNova.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Under - SuperNova</h2>
+                <p className="text-sm">Wins: {fullTimeGoalStatsSuperNova.under.wins}</p>
+                <p className="text-sm">Losses: {fullTimeGoalStatsSuperNova.under.losses}</p>
+                <p className="text-sm">Win %: {fullTimeGoalStatsSuperNova.under.winPercentage}</p>
+            </div>
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Over - Shared</h2>
+                <p className="text-sm">Wins: {sharedFTGoalStats.over.wins}</p>
+                <p className="text-sm">Losses: {sharedFTGoalStats.over.losses}</p>
+                <p className="text-sm">Win %: {sharedFTGoalStats.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTG Under - Shared</h2>
+                <p className="text-sm">Wins: {sharedFTGoalStats.under.wins}</p>
+                <p className="text-sm">Losses: {sharedFTGoalStats.under.losses}</p>
+                <p className="text-sm">Win %: {sharedFTGoalStats.under.winPercentage}</p>
+            </div>
+        </div>
+        {/* Full-Time Corner Stats - 3rd Row */}
+        <h2 className="text-2xl font-bold mt-6 mb-2">Full Time Corners - Overs are Backend Only</h2>
+        <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Over - SuperNova</h2>
+                <p className="text-sm">Wins: {fullTimeCornerStatsSuperNova.over.wins}</p>
+                <p className="text-sm">Losses: {fullTimeCornerStatsSuperNova.over.losses}</p>
+                <p className="text-sm">Win %: {fullTimeCornerStatsSuperNova.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Over - Mythos</h2>
+                <p className="text-sm">Wins: {fullTimeCornerStatsMythos.over.wins}</p>
+                <p className="text-sm">Losses: {fullTimeCornerStatsMythos.over.losses}</p>
+                <p className="text-sm">Win %: {fullTimeCornerStatsMythos.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Over - Shared</h2>
+                <p className="text-sm">Wins: {sharedFTCStats.over.wins}</p>
+                <p className="text-sm">Losses: {sharedFTCStats.over.losses}</p>
+                <p className="text-sm">Win %: {sharedFTCStats.over.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Under - SuperNova</h2>
+                <p className="text-sm">Wins: {fullTimeCornerStatsSuperNova.under.wins}</p>
+                <p className="text-sm">Losses: {fullTimeCornerStatsSuperNova.under.losses}</p>
+                <p className="text-sm">Win %: {fullTimeCornerStatsSuperNova.under.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Under - Mythos</h2>
+                <p className="text-sm">Wins: {fullTimeCornerStatsMythos.under.wins}</p>
+                <p className="text-sm">Losses: {fullTimeCornerStatsMythos.under.losses}</p>
+                <p className="text-sm">Win %: {fullTimeCornerStatsMythos.under.winPercentage}</p>
+            </div>
+
+            <div className="p-4 border rounded shadow">
+                <h2 className="text-lg font-semibold">FTC Under - Shared</h2>
+                <p className="text-sm">Wins: {sharedFTCStats.under.wins}</p>
+                <p className="text-sm">Losses: {sharedFTCStats.under.losses}</p>
+                <p className="text-sm">Win %: {sharedFTCStats.under.winPercentage}</p>
+            </div>
+        </div>
+    </div>
     );
 }
