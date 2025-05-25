@@ -17,7 +17,7 @@ export default function Dashboard() {
     const [teamFilterType, setTeamFilterType] = useState("All");
 
     const clearFilters = () => {
-        setSelectedLeague(""); // Reset league selection
+        setSelectedLeague(""); // Reset league selection 
         setSelectedTeam(""); // Reset selected teams
         setTeamFilterType("All"); // Reset team filter type
     };
