@@ -36,7 +36,7 @@ export default function Dashboard() {
     }, []);
     useEffect(() => {
         if (selectedLeague) {
-            setSelectedTeam([]); // Reset teams when league changes
+            setSelectedTeam(""); // Reset teams when league changes
         }
     }, [selectedLeague]);
 
