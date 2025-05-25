@@ -18,7 +18,7 @@ export default function Dashboard() {
 
     const clearFilters = () => {
         setSelectedLeague(""); // Reset league selection
-        setSelectedTeam([]); // Reset selected teams
+        setSelectedTeam(""); // Reset selected teams
         setTeamFilterType("All"); // Reset team filter type
     };
 
