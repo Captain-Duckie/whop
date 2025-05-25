@@ -35,6 +35,11 @@ export default function Dashboard() {
             .then(data => console.log("Whop User Data:", data))
             .catch(console.error);
     }, []);
+    useEffect(() => {
+        if (selectedLeague) {
+            setSelectedTeams([]); // Reset teams when league changes
+        }
+    }, [selectedLeague]);
 
     const filterByTeam = (data: SoccerData[]) => {
         if (!selectedTeams.length) return data; // Return all data if no team is selected
