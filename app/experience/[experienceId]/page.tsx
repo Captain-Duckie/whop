@@ -82,9 +82,6 @@ export default function Dashboard() {
         .sort((a, b) => a.localeCompare(b)); // sort alphabetically
 
 
-    const filteredByTeam = filterByTeam(teamsForLeague);
-    //const filteredByDate = filterByDateRange(filteredByTeam);
-
 
     const calculateFHStats = (playType: string) => {
         const playData = filteredData.filter((row) => row[playType] === "Over");
