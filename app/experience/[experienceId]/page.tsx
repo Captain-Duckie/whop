@@ -84,6 +84,7 @@ export default function Dashboard() {
 
     const filteredByTeam = filterByTeam(teamsForLeague);
     const filteredByDate = filterByDateRange(filteredByTeam);
+    const filteredData = filteredByDate;
 
     const calculateFHStats = (playType: string) => {
         const playData = filteredData.filter((row) => row[playType] === "Over");
