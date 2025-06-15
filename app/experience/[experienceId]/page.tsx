@@ -206,14 +206,8 @@ export default function Dashboard() {
     const supernovaStats = calculateFHStats("SN FHG");
     const mythosStats = calculateFHStats("M FHG");
     const sharedStats = calculateFHSharedStats();
-    const teamsForLeague = filterByTeam(
-      selectedLeague ? data.filter((row) => row.League === selectedLeague) : data
-    );
+    const nebulaStats = calculateFHStats("Nebula");
 
-    const uniqueTeams = [
-        ...new Set(teamsForLeague.flatMap((row) => [row["Home Team"], row["Away Team"]]))
-        ].filter(Boolean) // remove null/undefined
-        .sort((a, b) => a.localeCompare(b)); // sort alphabetically
 
     return (
         <div className="p-6">
@@ -302,6 +296,15 @@ export default function Dashboard() {
                 <p className="text-sm">Wins: {sharedStats.wins}</p>
                 <p className="text-sm">Losses: {sharedStats.losses}</p>
                 <p className="text-sm">Win %: {sharedStats.winPercentage}</p>
+            </div>
+        </div>
+        {/* Second row: Nebula */}
+        <div className="grid grid-cols-1">
+            <div className="p-4 border rounded shadow">
+            <h2 className="text-lg font-semibold">Nebula</h2>
+            <p className="text-sm">Wins: {nebulaStats.wins}</p>
+            <p className="text-sm">Losses: {nebulaStats.losses}</p>
+            <p className="text-sm">Win %: {nebulaStats.winPercentage}</p>
             </div>
         </div>
         {/* Full-Time Corner Stats - 3rd Row */}
