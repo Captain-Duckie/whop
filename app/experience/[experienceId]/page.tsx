@@ -15,11 +15,15 @@ export default function Dashboard() {
     const [selectedLeague, setSelectedLeague] = useState("");
     const [selectedTeam, setSelectedTeam] = useState("");
     const [teamFilterType, setTeamFilterType] = useState("All");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
 
     const clearFilters = () => {
         setSelectedLeague(""); // Reset league selection 
         setSelectedTeam(""); // Reset selected teams
         setTeamFilterType("All"); // Reset team filter type
+        setStartDate("");
+        setEndDate("");
     };
 
 
@@ -40,6 +44,7 @@ export default function Dashboard() {
         }
     }, [selectedLeague]);
 
+      // Function to filter by team selection
     const filterByTeam = (data: SoccerData[]) => {
         if (!selectedTeam) return data;
 
@@ -51,10 +56,34 @@ export default function Dashboard() {
         return true;
         });
     };
-    
-    const filteredData = filterByTeam(
-      selectedLeague ? data.filter(row => row.League === selectedLeague) : data
-    );
+    const filterByDateRange = (data: SoccerData[]) => {
+        if (!startDate && !endDate) return data;
+
+        return data.filter((row) => {
+        const rowDate = new Date(row.Date);
+        const start = startDate ? new Date(startDate) : null;
+        const end = endDate ? new Date(endDate) : null;
+
+        return (!start || rowDate >= start) && (!end || rowDate <= end);
+        });
+    };
+
+
+    // Apply filters before calculating stats
+    const filteredData = filterByDateRange(filterByTeam(
+    selectedLeague ? data.filter((row) => row.League === selectedLeague) : data
+    ));
+    const teamsForLeague = selectedLeague
+        ? data.filter((row) => row.League === selectedLeague)
+        : data;
+    const uniqueTeams = [
+        ...new Set(teamsForLeague.flatMap((row) => [row["Home Team"], row["Away Team"]]))
+        ].filter(Boolean) // remove null/undefined
+        .sort((a, b) => a.localeCompare(b)); // sort alphabetically
+
+
+    const filteredByTeam = filterByTeam(teamsForLeague);
+    const filteredByDate = filterByDateRange(filteredByTeam);
 
     const calculateFHStats = (playType: string) => {
         const playData = filteredData.filter((row) => row[playType] === "Over");
@@ -229,6 +258,20 @@ export default function Dashboard() {
             <option value="Home">Home Team</option>
             <option value="Away">Away Team</option>
         </select>
+        <div className="flex gap-4 mb-4">
+          <input
+              type="date"
+              className="p-2 border bg-gray-800 text-white"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+          />
+          <input
+              type="date"
+              className="p-2 border bg-gray-800 text-white"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+          />
+          </div>
 
         <button 
             onClick={clearFilters} 
