@@ -72,7 +72,13 @@ export async function GET() {
         const response = new Response(JSON.stringify({
             soccer: soccerData,
             horizon: horizonData,
-            mythos: mythosData
+            mythos: mythosData,
+            debug: {
+                horizonFileExists: fs.existsSync(horizonFilePath),
+                horizonFilePath: horizonFilePath,
+                publicDirFiles: fs.readdirSync(path.join(process.cwd(), 'public')),
+                horizonSheetNames: horizonData.length === 0 ? "Check server logs" : "Data loaded successfully"
+            }
         }), {
             headers: { 
                 'Content-Type': 'application/json',
