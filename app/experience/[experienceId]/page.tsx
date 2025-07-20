@@ -11,26 +11,26 @@ type SoccerData = {
 };
 
 export default function Landing() {
-    const [data, setData] = useState<SoccerData[]>([]);
+    // const [data, setData] = useState<SoccerData[]>([]);
     const [horizonData, setHorizonData] = useState<SoccerData[]>([]);
 
     useEffect(() => {
         fetch("/api/data")
             .then(response => response.json())
             .then(data => {
-                setData(data.soccer || []);
+                // setData(data.soccer || []);
                 setHorizonData(data.horizon || []);
             })
             .catch(console.error);
     }, []);
 
     // Get yesterday's date in YYYY-MM-DD format
-    const getYesterday = () => {
-        const d = new Date();
-        d.setDate(d.getDate() - 1);
-        return d.toISOString().split("T")[0];
-    };
-    const yesterday = getYesterday();
+    // const getYesterday = () => {
+    //     const d = new Date();
+    //     d.setDate(d.getDate() - 1);
+    //     return d.toISOString().split("T")[0];
+    // };
+    // const yesterday = getYesterday();
 
     // Get yesterday's date in MM/DD/YYYY format
     const getYesterdayMMDDYYYY = () => {
