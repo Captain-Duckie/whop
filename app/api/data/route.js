@@ -13,7 +13,9 @@ export async function GET() {
         console.log("File paths:", { soccerFilePath, horizonFilePath, mythosFilePath });
 
         // Check if files exist
+        console.log("Soccer file exists:", fs.existsSync(soccerFilePath));
         console.log("Horizon file exists:", fs.existsSync(horizonFilePath));
+        console.log("Mythos file exists:", fs.existsSync(mythosFilePath));
 
         // Read Soccer Records file (main dataset)
         const soccerFileBuffer = fs.readFileSync(soccerFilePath);
@@ -25,14 +27,29 @@ export async function GET() {
 
         // Read Horizon data from Horizon Records file
         console.log("Reading Horizon file...");
-        const horizonFileBuffer = fs.readFileSync(horizonFilePath);
-        const horizonWorkbook = XLSX.read(horizonFileBuffer, { type: 'buffer' });
-        console.log("Horizon sheet names:", horizonWorkbook.SheetNames);
-        const horizonSheetName = horizonWorkbook.SheetNames[0]; // Use first sheet
-        const horizonSheet = horizonWorkbook.Sheets[horizonSheetName];
-        const horizonData = XLSX.utils.sheet_to_json(horizonSheet);
-        console.log("Horizon data length:", horizonData.length);
-        console.log("First horizon record:", horizonData[0]);
+        let horizonData = [];
+        try {
+            const horizonFileBuffer = fs.readFileSync(horizonFilePath);
+            console.log("Horizon file buffer size:", horizonFileBuffer.length);
+            const horizonWorkbook = XLSX.read(horizonFileBuffer, { type: 'buffer' });
+            console.log("Horizon sheet names:", horizonWorkbook.SheetNames);
+            
+            // Try using "Horizon" sheet first, then fall back to first sheet
+            let horizonSheetName = "Horizon";
+            if (!horizonWorkbook.Sheets[horizonSheetName]) {
+                console.log("'Horizon' sheet not found, using first sheet:", horizonWorkbook.SheetNames[0]);
+                horizonSheetName = horizonWorkbook.SheetNames[0];
+            }
+            
+            const horizonSheet = horizonWorkbook.Sheets[horizonSheetName];
+            console.log("Using sheet:", horizonSheetName);
+            horizonData = XLSX.utils.sheet_to_json(horizonSheet);
+            console.log("Horizon data length:", horizonData.length);
+            console.log("First horizon record:", horizonData[0]);
+        } catch (horizonError) {
+            console.error("Error reading Horizon file:", horizonError);
+            horizonData = [];
+        }
 
         // Read Mythos Dataset file
         const mythosFileBuffer = fs.readFileSync(mythosFilePath);
