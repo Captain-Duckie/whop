@@ -30,7 +30,7 @@ export async function GET() {
         const horizonFileBuffer = fs.readFileSync(horizonFilePath);
         const horizonWorkbook = XLSX.read(horizonFileBuffer, { type: 'buffer' });
         const horizonSheetName = "Horizon";
-        const horizonSheet = soccerWorkbook.Sheets[horizonSheetName];
+        const horizonSheet = horizonWorkbook.Sheets[horizonSheetName];
         const horizonData = XLSX.utils.sheet_to_json(horizonSheet);
         console.log("Horizon data length:", horizonData.length);
 
