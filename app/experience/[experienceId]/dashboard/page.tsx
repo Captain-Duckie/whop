@@ -10,6 +10,19 @@ type SoccerData = {
   [key: string]: string | number;
 };
 
+// Type for FHG signals
+type FHGSignals = {
+  SN: boolean;
+  M: boolean;
+  Nebula: boolean;
+};
+
+// Type for matrix bucket
+type MatrixBucket = {
+  label: string;
+  filter: (signals: FHGSignals) => boolean;
+};
+
 export default function SearchResults() {
     const [data, setData] = useState<SoccerData[]>([]); 
     const [selectedLeague, setSelectedLeague] = useState("");
@@ -17,8 +30,8 @@ export default function SearchResults() {
     const [teamFilterType, setTeamFilterType] = useState("All");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [horizonData, setHorizonData] = useState<any[]>([]);
-    const [mythosData, setMythosData] = useState<any[]>([]);
+    const [horizonData, setHorizonData] = useState<SoccerData[]>([]);
+    const [mythosData, setMythosData] = useState<SoccerData[]>([]);
 
     const clearFilters = () => {
         setSelectedLeague(""); // Reset league selection 
@@ -215,44 +228,44 @@ export default function SearchResults() {
 
     // --- FHG Correlation Matrix Logic ---
     // Helper to check bot signals
-    const getFHGSignals = (row) => ({
+    const getFHGSignals = (row: SoccerData): FHGSignals => ({
         SN: row["SN FHG"] === "Over",
         M: row["M FHG"] === "Over",
         Nebula: row["Nebula"] === "Over",
     });
     // Matrix buckets
-    const matrixBuckets = [
+    const matrixBuckets: MatrixBucket[] = [
         {
             label: "SuperNova Only",
-            filter: (s) => s.SN && !s.M && !s.Nebula,
+            filter: (s: FHGSignals) => s.SN && !s.M && !s.Nebula,
         },
         {
             label: "Mythos Only",
-            filter: (s) => !s.SN && s.M && !s.Nebula,
+            filter: (s: FHGSignals) => !s.SN && s.M && !s.Nebula,
         },
         {
             label: "Nebula Only",
-            filter: (s) => !s.SN && !s.M && s.Nebula,
+            filter: (s: FHGSignals) => !s.SN && !s.M && s.Nebula,
         },
         {
             label: "SuperNova & Mythos",
-            filter: (s) => s.SN && s.M && !s.Nebula,
+            filter: (s: FHGSignals) => s.SN && s.M && !s.Nebula,
         },
         {
             label: "SuperNova & Nebula",
-            filter: (s) => s.SN && !s.M && s.Nebula,
+            filter: (s: FHGSignals) => s.SN && !s.M && s.Nebula,
         },
         {
             label: "Mythos & Nebula",
-            filter: (s) => !s.SN && s.M && s.Nebula,
+            filter: (s: FHGSignals) => !s.SN && s.M && s.Nebula,
         },
         {
             label: "All Three Agree",
-            filter: (s) => s.SN && s.M && s.Nebula,
+            filter: (s: FHGSignals) => s.SN && s.M && s.Nebula,
         },
         {
             label: "None (Disagree)",
-            filter: (s) => !s.SN && !s.M && !s.Nebula,
+            filter: (s: FHGSignals) => !s.SN && !s.M && !s.Nebula,
         },
     ];
     // Calculate stats for each bucket
