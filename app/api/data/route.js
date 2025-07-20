@@ -7,9 +7,9 @@ export async function GET() {
         console.log("API route called - starting data load...");
         
         // Path to your Excel files
-        const soccerFilePath = path.join(process.cwd(), 'public', 'Horizon Records.xlsx');
+        const soccerFilePath = path.join(process.cwd(), 'public', 'Soccer Records.xlsx');
         const horizonFilePath = path.join(process.cwd(), 'public', 'Horizon Records.xlsx');
-        const mythosFilePath = path.join(process.cwd(), 'public', 'Horizon Records.xlsx');
+        const mythosFilePath = path.join(process.cwd(), 'public', 'Mythos Dataset.xlsx');
         
         console.log("File paths:", { soccerFilePath, horizonFilePath, mythosFilePath });
         console.log("Files exist?", {
