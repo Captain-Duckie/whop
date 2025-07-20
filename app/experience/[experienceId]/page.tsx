@@ -12,7 +12,7 @@ type SoccerData = {
 
 export default function Landing() {
     const [data, setData] = useState<SoccerData[]>([]);
-    const [horizonData, setHorizonData] = useState<any[]>([]);
+    const [horizonData, setHorizonData] = useState<SoccerData[]>([]);
 
     useEffect(() => {
         fetch("/api/data")
@@ -31,12 +31,6 @@ export default function Landing() {
         return d.toISOString().split("T")[0];
     };
     const yesterday = getYesterday();
-
-    // Filter data for yesterday's results
-    const yesterdaysResults = data.filter(row => {
-        const rowDate = row.Date ? new Date(row.Date).toISOString().split("T")[0] : "";
-        return rowDate === yesterday;
-    });
 
     // Get yesterday's date in MM/DD/YYYY format
     const getYesterdayMMDDYYYY = () => {
@@ -85,7 +79,7 @@ export default function Landing() {
         }
         // Pushes are dropped from reporting
     });
-    const overWinPct = overPlays > 0 ? ((overWins / overPlays) * 100).toFixed(1) : "0.0";
+    // const overWinPct = overPlays > 0 ? ((overWins / overPlays) * 100).toFixed(1) : "0.0";
 
     let underWins = 0, underLosses = 0, underProfit = 0;
     ftcUnderPlays.forEach(row => {
@@ -101,7 +95,7 @@ export default function Landing() {
         }
         // Pushes are dropped from reporting
     });
-    const underWinPct = underPlays > 0 ? ((underWins / underPlays) * 100).toFixed(1) : "0.0";
+    // const underWinPct = underPlays > 0 ? ((underWins / underPlays) * 100).toFixed(1) : "0.0";
 
     // Full Time Goals (Asian Totals)
     const yesterdaysFTGPlays = horizonData.filter(row => {
@@ -165,7 +159,7 @@ export default function Landing() {
         // Pushes are dropped from reporting
     });
     const ftgOverCount = ftgOverPlays.length;
-    const ftgOverWinPct = ftgOverCount > 0 ? ((ftgOverWins / ftgOverCount) * 100).toFixed(1) : "0.0";
+    // const ftgOverWinPct = ftgOverCount > 0 ? ((ftgOverWins / ftgOverCount) * 100).toFixed(1) : "0.0";
 
     // Under stats (Asian Totals)
     let ftgUnderWins = 0, ftgUnderLosses = 0, ftgUnderWinPush = 0, ftgUnderLossPush = 0, ftgUnderProfit = 0;
@@ -190,12 +184,12 @@ export default function Landing() {
         // Pushes are dropped from reporting
     });
     const ftgUnderCount = ftgUnderPlays.length;
-    const ftgUnderWinPct = ftgUnderCount > 0 ? ((ftgUnderWins / ftgUnderCount) * 100).toFixed(1) : "0.0";
+    // const ftgUnderWinPct = ftgUnderCount > 0 ? ((ftgUnderWins / ftgUnderCount) * 100).toFixed(1) : "0.0";
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
             <h1 className="text-4xl font-bold mb-6">Welcome to Stellariea Sports!</h1>
-            <p className="mb-8 text-lg">Yesterday's Results</p>
+            <p className="mb-8 text-lg">Yesterday&apos;s Results</p>
             <div className="w-full max-w-md mb-8">
                 <div className="bg-gray-800 rounded shadow p-6 flex flex-col items-center">
                     <h2 className="text-xl font-semibold mb-2">First Half Goals (FHG)</h2>
@@ -240,7 +234,3 @@ export default function Landing() {
         </div>
     );
 }
-
-// npm run dev to start
-// kill-port 3000 to kill
-
