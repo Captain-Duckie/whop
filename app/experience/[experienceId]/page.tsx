@@ -200,23 +200,6 @@ export default function Landing() {
             <h1 className="text-4xl font-bold mb-6">Welcome to Stellariea Sports!</h1>
             <p className="mb-8 text-lg">Yesterday&apos;s Results</p>
             
-            {/* Debug Section */}
-            <div className="w-full max-w-md mb-8 p-4 bg-red-800 rounded shadow">
-                <h3 className="text-lg font-bold mb-2">Debug Info</h3>
-                <p className="text-sm">Horizon Data Length: {horizonData.length}</p>
-                <p className="text-sm">Total Records Available: {horizonData.length}</p>
-                {horizonData.length > 0 && (
-                    <>
-                        <p className="text-sm">Available Fields: {Object.keys(horizonData[0]).join(", ")}</p>
-                        <p className="text-sm">Sample Dates: {horizonData.slice(0, 5).map(row => row.Date).join(", ")}</p>
-                    </>
-                )}
-                <p className="text-sm">Sample Horizon Record:</p>
-                <pre className="text-xs bg-gray-900 p-2 rounded mt-2 overflow-auto max-h-32">
-                    {horizonData.length > 0 ? JSON.stringify(horizonData[0], null, 2) : "No data"}
-                </pre>
-            </div>
-            
             <div className="w-full max-w-md mb-8">
                 <div className="bg-gray-800 rounded shadow p-6 flex flex-col items-center">
                     <h2 className="text-xl font-semibold mb-2">First Half Goals (FHG)</h2>
