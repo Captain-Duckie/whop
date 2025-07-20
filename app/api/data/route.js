@@ -8,7 +8,7 @@ export async function GET() {
         // Path to your Excel files
         const soccerFilePath = path.join(process.cwd(), 'public', 'Soccer Records.xlsx');
         const horizonFilePath = path.join(process.cwd(), 'public', 'Horizon Records.xlsx');
-        const mythosFilePath = path.join(process.cwd(), 'public', 'Mythos Dataset.xlsx');
+        const mythosFilePath = path.join(process.cwd(), 'public', 'Horizon Dataset.xlsx');
 
         console.log("File paths:", { soccerFilePath, horizonFilePath, mythosFilePath });
 
@@ -25,32 +25,16 @@ export async function GET() {
         const soccerData = XLSX.utils.sheet_to_json(soccerSheet);
         console.log("Soccer data length:", soccerData.length);
 
-        // Read Horizon data from Horizon Records file
-        console.log("Reading Horizon file...");
-        let horizonData = [];
-        try {
-            const horizonFileBuffer = fs.readFileSync(horizonFilePath);
-            console.log("Horizon file buffer size:", horizonFileBuffer.length);
-            const horizonWorkbook = XLSX.read(horizonFileBuffer, { type: 'buffer' });
-            console.log("Horizon sheet names:", horizonWorkbook.SheetNames);
-            
-            // Try using "Horizon" sheet first, then fall back to first sheet
-            let horizonSheetName = "Horizon";
-            if (!horizonWorkbook.Sheets[horizonSheetName]) {
-                console.log("'Horizon' sheet not found, using first sheet:", horizonWorkbook.SheetNames[0]);
-                horizonSheetName = horizonWorkbook.SheetNames[0];
-            }
-            
-            const horizonSheet = horizonWorkbook.Sheets[horizonSheetName];
-            console.log("Using sheet:", horizonSheetName);
-            horizonData = XLSX.utils.sheet_to_json(horizonSheet);
-            console.log("Horizon data length:", horizonData.length);
-            console.log("First horizon record:", horizonData[0]);
-        } catch (horizonError) {
-            console.error("Error reading Horizon file:", horizonError);
-            horizonData = [];
-        }
 
+        // Read Soccer Records file (main dataset)
+        const horizonFileBuffer = fs.readFileSync(horizonFilePath);
+        const horizonWorkbook = XLSX.read(horizonFileBuffer, { type: 'buffer' });
+        const horizonSheetName = "Horizon";
+        const horizonSheet = soccerWorkbook.Sheets[horizonSheetName];
+        const horizonData = XLSX.utils.sheet_to_json(horizonSheet);
+        console.log("Horizon data length:", horizonData.length);
+
+       
         // Read Mythos Dataset file
         const mythosFileBuffer = fs.readFileSync(mythosFilePath);
         const mythosWorkbook = XLSX.read(mythosFileBuffer, { type: 'buffer' });
