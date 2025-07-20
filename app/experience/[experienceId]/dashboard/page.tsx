@@ -856,13 +856,8 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
       
       let totalGames = 0;
       
-      mythosFiltered.forEach(_row => {
-        // const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
-        // const mythosRow = mythosLookup.get(key);
-        totalGames++;
-        
-        // Note: Other calculations removed since they're not used in this display
-      });
+      // Just count the filtered games - no need to iterate through each row
+      totalGames = mythosFiltered.length;
       
       return totalGames;
     })()}</p>
