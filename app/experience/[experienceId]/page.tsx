@@ -230,7 +230,9 @@ export default function Landing() {
                 </div>
             </div>
             <Link href="./dashboard">
-                <button className="mt-8 px-6 py-3 bg-blue-600 rounded text-white font-semibold hover:bg-blue-700 transition">Go to Dashboard</button>
+              <a className="mt-8 px-6 py-3 bg-blue-600 rounded text-white font-semibold hover:bg-blue-700 transition">
+                Go to Dashboard
+              </a>
             </Link>
         </div>
     );
