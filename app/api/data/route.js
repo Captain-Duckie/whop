@@ -16,10 +16,10 @@ export async function GET() {
         const soccerSheet = soccerWorkbook.Sheets[soccerSheetName];
         const soccerData = XLSX.utils.sheet_to_json(soccerSheet);
 
-        // Read Horizon data from Soccer Records file
+        // Read Horizon data from Horizon Records file
         const horizonFileBuffer = fs.readFileSync(horizonFilePath);
         const horizonWorkbook = XLSX.read(horizonFileBuffer, { type: 'buffer' });
-        const horizonSheetName = "Horizon";
+        const horizonSheetName = horizonWorkbook.SheetNames[0]; // Use first sheet
         const horizonSheet = horizonWorkbook.Sheets[horizonSheetName];
         const horizonData = XLSX.utils.sheet_to_json(horizonSheet);
 
