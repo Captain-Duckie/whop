@@ -295,42 +295,42 @@ export default function SearchResults() {
     });
 
     // --- Correlation Matrix for First Half Goals ---
-const calculateFHGCorrelations = () => {
-    // Each row: which bots pinged "Over" for FHG
-    type ComboKey = string;
-    type ComboStats = { label: string; count: number; wins: number; losses: number; winRate: string };
-    const combos: Record<ComboKey, ComboStats> = {};
-    filteredData.forEach((row) => {
-        const bots: string[] = [];
-        if (row["SN FHG"] === "Over") bots.push("SuperNova");
-        if (row["M FHG"] === "Over") bots.push("Mythos");
-        if (row["Nebula"] === "Over") bots.push("Nebula");
-        // Key: sorted bot names joined by "+" (e.g. "SuperNova+Mythos")
-        const key = bots.sort().join("+");
-        if (!combos[key]) {
-            combos[key] = {
-                label: bots.length ? bots.join(" + ") : "None",
-                count: 0,
-                wins: 0,
-                losses: 0,
-                winRate: "N/A",
-            };
-        }
-        combos[key].count++;
-        if (bots.length && Number(row["FH Goals"]) >= 1) {
-            combos[key].wins++;
-        } else if (bots.length) {
-            combos[key].losses++;
-        }
-    });
-    // Calculate win rates
-    Object.values(combos).forEach((combo) => {
-        const total = combo.wins + combo.losses;
-        combo.winRate = total > 0 ? `${((combo.wins / total) * 100).toFixed(2)}%` : "N/A";
-    });
-    // Sort by most bots, then count desc
-    return Object.values(combos).sort((a, b) => b.label.split(" + ").length - a.label.split(" + ").length || b.count - a.count);
-};
+// const calculateFHGCorrelations = () => {
+//     // Each row: which bots pinged "Over" for FHG
+//     type ComboKey = string;
+//     type ComboStats = { label: string; count: number; wins: number; losses: number; winRate: string };
+//     const combos: Record<ComboKey, ComboStats> = {};
+//     filteredData.forEach((row) => {
+//         const bots: string[] = [];
+//         if (row["SN FHG"] === "Over") bots.push("SuperNova");
+//         if (row["M FHG"] === "Over") bots.push("Mythos");
+//         if (row["Nebula"] === "Over") bots.push("Nebula");
+//         // Key: sorted bot names joined by "+" (e.g. "SuperNova+Mythos")
+//         const key = bots.sort().join("+");
+//         if (!combos[key]) {
+//             combos[key] = {
+//                 label: bots.length ? bots.join(" + ") : "None",
+//                 count: 0,
+//                 wins: 0,
+//                 losses: 0,
+//                 winRate: "N/A",
+//             };
+//         }
+//         combos[key].count++;
+//         if (bots.length && Number(row["FH Goals"]) >= 1) {
+//             combos[key].wins++;
+//         } else if (bots.length) {
+//             combos[key].losses++;
+//         }
+//     });
+//     // Calculate win rates
+//     Object.values(combos).forEach((combo) => {
+//         const total = combo.wins + combo.losses;
+//         combo.winRate = total > 0 ? `${((combo.wins / total) * 100).toFixed(2)}%` : "N/A";
+//     });
+//     // Sort by most bots, then count desc
+//     return Object.values(combos).sort((a, b) => b.label.split(" + ").length - a.label.split(" + ").length || b.count - a.count);
+// };
 // const fhgCorrelations = calculateFHGCorrelations();
 
 // --- Mythos Dataset FHG % Card ---
@@ -389,12 +389,12 @@ const horizonFHGPercent = horizonFHGPlays > 0 ? ((horizonFHGWins / horizonFHGPla
 // Horizon FTG Stats - Only include games with Over/Under in FTG column and exclude 'Argentine Division 2'
 const horizonFTGFiltered = horizonFiltered.filter(row => (row["FTG"] === "Over" || row["FTG"] === "Under") && row.League !== "Argentine Division 2");
 const horizonFTGPlays = horizonFTGFiltered.length;
-const horizonFTGWins = horizonFTGFiltered.filter(row => Number(row["FT Goals"] || 0) > Number(row["Pregame Line"] || 0)).length;
+// const horizonFTGWins = horizonFTGFiltered.filter(row => Number(row["FT Goals"] || 0) > Number(row["Pregame Line"] || 0)).length;
 // const horizonFTGPercent = horizonFTGPlays > 0 ? ((horizonFTGWins / horizonFTGPlays) * 100).toFixed(2) : "N/A";
 // Only include games with FTC = "Over" or "Under" for FTC stats
 const horizonFTCFiltered = horizonFiltered.filter(row => row["FTC"] === "Over" || row["FTC"] === "Under");
 const horizonFTCPlays = horizonFTCFiltered.length;
-const horizonFTCWins = horizonFTCFiltered.filter(row => Number(row["FT Corners"] || 0) > Number(row["Pregame Corner Line"] || 0)).length;
+// const horizonFTCWins = horizonFTCFiltered.filter(row => Number(row["FT Corners"] || 0) > Number(row["Pregame Corner Line"] || 0)).length;
 // const horizonFTCPercent = horizonFTCPlays > 0 ? ((horizonFTCWins / horizonFTCPlays) * 100).toFixed(2) : "N/A";
 
 // Asian Total evaluation logic for FTG (filtered)
@@ -856,7 +856,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
       
       let totalGames = 0;
       
-      mythosFiltered.forEach(row => {
+      mythosFiltered.forEach(_row => {
         // const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
         // const mythosRow = mythosLookup.get(key);
         totalGames++;
