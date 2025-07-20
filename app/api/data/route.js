@@ -6,7 +6,7 @@ export async function GET() {
     try {
         // Path to your Excel files
         const soccerFilePath = path.join(process.cwd(), 'public', 'Soccer Records.xlsx');
-        const horizonFilePath = path.join(process.cwd(), 'public', 'Soccer Records.xlsx');
+        const horizonFilePath = path.join(process.cwd(), 'public', 'Horizon Records.xlsx');
         const mythosFilePath = path.join(process.cwd(), 'public', 'Mythos Dataset.xlsx');
 
         // Read Soccer Records file (main dataset)
