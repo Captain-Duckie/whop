@@ -21,6 +21,7 @@ export async function GET() {
         const soccerSheetName = "Mythos Soccer";
         const soccerSheet = soccerWorkbook.Sheets[soccerSheetName];
         const soccerData = XLSX.utils.sheet_to_json(soccerSheet);
+        console.log("Soccer data length:", soccerData.length);
 
         // Read Horizon data from Horizon Records file
         console.log("Reading Horizon file...");
