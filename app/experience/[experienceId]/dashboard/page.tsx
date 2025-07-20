@@ -23,6 +23,17 @@ type MatrixBucket = {
   filter: (signals: FHGSignals) => boolean;
 };
 
+// Type for matrix stats result
+type MatrixStatsResult = {
+  label: string;
+  plays: number;
+  validPlays: number;
+  wins: number;
+  losses: number;
+  disregarded: number;
+  winPercentage: string;
+};
+
 export default function SearchResults() {
     const [data, setData] = useState<SoccerData[]>([]); 
     const [selectedLeague, setSelectedLeague] = useState("");
@@ -102,115 +113,115 @@ export default function SearchResults() {
 
 
 
-    const calculateFHStats = (playType: string) => {
-        const playData = filteredData.filter((row) => row[playType] === "Over");
-        const wins = playData.filter((row) => Number(row["FH Goals"]) >= 1).length;
-        const losses = playData.filter((row) => Number(row["FH Goals"]) === 0).length;
-        const winPercentageNum =
-        playData.length > 0 ? parseFloat(((wins / playData.length) * 100).toFixed(2)) : 0;
+    // const calculateFHStats = (playType: string) => {
+    //     const playData = filteredData.filter((row) => row[playType] === "Over");
+    //     const wins = playData.filter((row) => Number(row["FH Goals"]) >= 1).length;
+    //     const losses = playData.filter((row) => Number(row["FH Goals"]) === 0).length;
+    //     const winPercentageNum =
+    //     playData.length > 0 ? parseFloat(((wins / playData.length) * 100).toFixed(2)) : 0;
 
-        return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
-    };
+    //     return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
+    // };
 
-    const calculateFHSharedStats = () => {
-        const sharedData = filteredData.filter(
-        (row) => row["M FHG"] === "Over" && row["SN FHG"] === "Over"
-        );
-        const wins = sharedData.filter((row) => Number(row["FH Goals"]) >= 1).length;
-        const losses = sharedData.filter((row) => Number(row["FH Goals"]) === 0).length;
-        const winPercentageNum =
-        sharedData.length > 0 ? parseFloat(((wins / sharedData.length) * 100).toFixed(2)) : 0;
+    // const calculateFHSharedStats = () => {
+    //     const sharedData = filteredData.filter(
+    //     (row) => row["M FHG"] === "Over" && row["SN FHG"] === "Over"
+    //     );
+    //     const wins = sharedData.filter((row) => Number(row["FH Goals"]) >= 1).length;
+    //     const losses = sharedData.filter((row) => Number(row["FH Goals"]) === 0).length;
+    //     const winPercentageNum =
+    //     sharedData.length > 0 ? parseFloat(((wins / sharedData.length) * 100).toFixed(2)) : 0;
 
-        return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
-    };
+    //     return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
+    // };
   /// FT Goal Stats
-    const calculateFTGoalStats = (playType: string) => {
-        const playData = filteredData.filter((row) => row[playType] === "Over" || row[playType] === "Under");
+    // const calculateFTGoalStats = (playType: string) => {
+    //     const playData = filteredData.filter((row) => row[playType] === "Over" || row[playType] === "Under");
 
-        const overPlays = playData.filter((row) => row[playType] === "Over");
-        const underPlays = playData.filter((row) => row[playType] === "Under");
+    //     const overPlays = playData.filter((row) => row[playType] === "Over");
+    //     const underPlays = playData.filter((row) => row[playType] === "Under");
 
-        const overWins = overPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
-        const overLosses = overPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
+    //     const overWins = overPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
+    //     const overLosses = overPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
 
-        const underWins = underPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
-        const underLosses = underPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
+    //     const underWins = underPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
+    //     const underLosses = underPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
 
-        const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-        const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
+    //     const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
+    //     const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
 
-        return {
-            over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-            under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-        };
-    };
-    const calculateCombinedFTGoalStats = () => {
-        const playData = filteredData.filter(
-            (row) => (row["M FTG"] === "Over" && row["SN FTG"] === "Over") || 
-                    (row["M FTG"] === "Under" && row["SN FTG"] === "Under")
-        );
+    //     return {
+    //         over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
+    //         under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
+    //     };
+    // };
+    // const calculateCombinedFTGoalStats = () => {
+    //     const playData = filteredData.filter(
+    //         (row) => (row["M FTG"] === "Over" && row["SN FTG"] === "Over") || 
+    //                 (row["M FTG"] === "Under" && row["SN FTG"] === "Under")
+    //     );
 
-        const overPlays = playData.filter((row) => row["M FTG"] === "Over" && row["SN FTG"] === "Over");
-        const underPlays = playData.filter((row) => row["M FTG"] === "Under" && row["SN FTG"] === "Under");
+    //     const overPlays = playData.filter((row) => row["M FTG"] === "Over" && row["SN FTG"] === "Over");
+    //     const underPlays = playData.filter((row) => row["M FTG"] === "Under" && row["SN FTG"] === "Under");
 
-        const overWins = overPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
-        const overLosses = overPlays.filter((row) => Number(row["FT Goals"]) <= Number(row["Pregame Line"])).length;
+    //     const overWins = overPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
+    //     const overLosses = overPlays.filter((row) => Number(row["FT Goals"]) <= Number(row["Pregame Line"])).length;
 
-        const underWins = underPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
-        const underLosses = underPlays.filter((row) => Number(row["FT Goals"]) >= Number(row["Pregame Line"])).length;
+    //     const underWins = underPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
+    //     const underLosses = underPlays.filter((row) => Number(row["FT Goals"]) >= Number(row["Pregame Line"])).length;
 
-        const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-        const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
+    //     const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
+    //     const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
 
-        return {
-            over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-            under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-        };
-    };
+    //     return {
+    //         over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
+    //         under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
+    //     };
+    // };
 
-    const calculateFTCStats = (playType: string) => {
-        const playData = filteredData.filter((row) => row[playType] === "Over" || row[playType] === "Under");
+    // const calculateFTCStats = (playType: string) => {
+    //     const playData = filteredData.filter((row) => row[playType] === "Over" || row[playType] === "Under");
 
-        const overPlays = playData.filter((row) => row[playType] === "Over");
-        const underPlays = playData.filter((row) => row[playType] === "Under");
+    //     const overPlays = playData.filter((row) => row[playType] === "Over");
+    //     const underPlays = playData.filter((row) => row[playType] === "Under");
 
-        const overWins = overPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
-        const overLosses = overPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
+    //     const overWins = overPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
+    //     const overLosses = overPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
 
-        const underWins = underPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
-        const underLosses = underPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
+    //     const underWins = underPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
+    //     const underLosses = underPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
 
-        const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-        const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
+    //     const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
+    //     const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
 
-        return {
-            over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-            under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-        };
-    };
-    const calculateCombinedFTCStats = () => {
-        const playData = filteredData.filter(
-            (row) => (row["M FTC"] === "Over" && row["SN FTC"] === "Over") || 
-                    (row["M FTC"] === "Under" && row["SN FTC"] === "Under")
-        );
+    //     return {
+    //         over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
+    //         under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
+    //     };
+    // };
+    // const calculateCombinedFTCStats = () => {
+    //     const playData = filteredData.filter(
+    //         (row) => (row["M FTC"] === "Over" && row["SN FTC"] === "Over") || 
+    //                 (row["M FTC"] === "Under" && row["SN FTC"] === "Under")
+    //     );
 
-        const overPlays = playData.filter((row) => row["M FTC"] === "Over" && row["SN FTC"] === "Over");
-        const underPlays = playData.filter((row) => row["M FTC"] === "Under" && row["SN FTC"] === "Under");
+    //     const overPlays = playData.filter((row) => row["M FTC"] === "Over" && row["SN FTC"] === "Over");
+    //     const underPlays = playData.filter((row) => row["M FTC"] === "Under" && row["SN FTC"] === "Under");
 
-        const overWins = overPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
-        const overLosses = overPlays.filter((row) => Number(row["FT Corners"]) <= Number(row["Pregame Corner Line"])).length;
+    //     const overWins = overPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
+    //     const overLosses = overPlays.filter((row) => Number(row["FT Corners"]) <= Number(row["Pregame Corner Line"])).length;
 
-        const underWins = underPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
-        const underLosses = underPlays.filter((row) => Number(row["FT Corners"]) >= Number(row["Pregame Corner Line"])).length;
+    //     const underWins = underPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
+    //     const underLosses = underPlays.filter((row) => Number(row["FT Corners"]) >= Number(row["Pregame Corner Line"])).length;
 
-        const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-        const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
+    //     const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
+    //     const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
 
-        return {
-            over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-            under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-        };
-    };
+    //     return {
+    //         over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
+    //         under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
+    //     };
+    // };
 
     // const sharedFTGoalStats = calculateCombinedFTGoalStats();
     // const fullTimeGoalStatsMythos = calculateFTGoalStats("M FTG");
@@ -320,7 +331,7 @@ const calculateFHGCorrelations = () => {
     // Sort by most bots, then count desc
     return Object.values(combos).sort((a, b) => b.label.split(" + ").length - a.label.split(" + ").length || b.count - a.count);
 };
-const fhgCorrelations = calculateFHGCorrelations();
+// const fhgCorrelations = calculateFHGCorrelations();
 
 // --- Mythos Dataset FHG % Card ---
 useEffect(() => {
@@ -379,12 +390,12 @@ const horizonFHGPercent = horizonFHGPlays > 0 ? ((horizonFHGWins / horizonFHGPla
 const horizonFTGFiltered = horizonFiltered.filter(row => (row["FTG"] === "Over" || row["FTG"] === "Under") && row.League !== "Argentine Division 2");
 const horizonFTGPlays = horizonFTGFiltered.length;
 const horizonFTGWins = horizonFTGFiltered.filter(row => Number(row["FT Goals"] || 0) > Number(row["Pregame Line"] || 0)).length;
-const horizonFTGPercent = horizonFTGPlays > 0 ? ((horizonFTGWins / horizonFTGPlays) * 100).toFixed(2) : "N/A";
+// const horizonFTGPercent = horizonFTGPlays > 0 ? ((horizonFTGWins / horizonFTGPlays) * 100).toFixed(2) : "N/A";
 // Only include games with FTC = "Over" or "Under" for FTC stats
 const horizonFTCFiltered = horizonFiltered.filter(row => row["FTC"] === "Over" || row["FTC"] === "Under");
 const horizonFTCPlays = horizonFTCFiltered.length;
 const horizonFTCWins = horizonFTCFiltered.filter(row => Number(row["FT Corners"] || 0) > Number(row["Pregame Corner Line"] || 0)).length;
-const horizonFTCPercent = horizonFTCPlays > 0 ? ((horizonFTCWins / horizonFTCPlays) * 100).toFixed(2) : "N/A";
+// const horizonFTCPercent = horizonFTCPlays > 0 ? ((horizonFTCWins / horizonFTCPlays) * 100).toFixed(2) : "N/A";
 
 // Asian Total evaluation logic for FTG (filtered)
 function evaluateAsianResult(direction: "Over" | "Under", ftGoals: number, line: number): "Win" | "Loss" | "Win/Push" | "Loss/Push" | "Push" {
@@ -520,35 +531,35 @@ const calculateFHGBefore30Matrix = () => {
     const matrixBuckets = [
         {
             label: "SuperNova Only",
-            filter: (s: any) => s.SN && !s.M && !s.Nebula,
+            filter: (s: FHGSignals) => s.SN && !s.M && !s.Nebula,
         },
         {
             label: "Mythos Only",
-            filter: (s: any) => !s.SN && s.M && !s.Nebula,
+            filter: (s: FHGSignals) => !s.SN && s.M && !s.Nebula,
         },
         {
             label: "Nebula Only",
-            filter: (s: any) => !s.SN && !s.M && s.Nebula,
+            filter: (s: FHGSignals) => !s.SN && !s.M && s.Nebula,
         },
         {
             label: "SuperNova & Mythos",
-            filter: (s: any) => s.SN && s.M && !s.Nebula,
+            filter: (s: FHGSignals) => s.SN && s.M && !s.Nebula,
         },
         {
             label: "SuperNova & Nebula",
-            filter: (s: any) => s.SN && !s.M && s.Nebula,
+            filter: (s: FHGSignals) => s.SN && !s.M && s.Nebula,
         },
         {
             label: "Mythos & Nebula",
-            filter: (s: any) => !s.SN && s.M && s.Nebula,
+            filter: (s: FHGSignals) => !s.SN && s.M && s.Nebula,
         },
         {
             label: "All Three Agree",
-            filter: (s: any) => s.SN && s.M && s.Nebula,
+            filter: (s: FHGSignals) => s.SN && s.M && s.Nebula,
         },
         {
             label: "None (Disagree)",
-            filter: (s: any) => !s.SN && !s.M && !s.Nebula,
+            filter: (s: FHGSignals) => !s.SN && !s.M && !s.Nebula,
         },
     ];
 
@@ -741,7 +752,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
 <h2 className="text-2xl font-bold mt-6 mb-2">First Half Goals Correlation Matrix (Cards)</h2>
 <p className="text-gray-300 text-center mb-4 max-w-4xl">
   This matrix analyzes different combinations of bot signals for first half goals and their corresponding win rates. 
-  Each combination shows how often at least one goal is scored in the first half when specific bots predict "Over" for FHG. 
+  Each combination shows how often at least one goal is scored in the first half when specific bots predict &quot;Over&quot; for FHG. 
   Results help identify which bot combinations are most reliable for first half goal predictions.
 </p>
 <div className="flex flex-col items-center w-full mb-6">
@@ -800,7 +811,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
 </p>
 <div className="flex flex-col items-center w-full mb-6">
   {/* Top: All Three Agree */}
-  {fhgBefore30MatrixStats.filter((c: any) => c.label === "All Three Agree").map((combo: any) => (
+  {fhgBefore30MatrixStats.filter((c: MatrixStatsResult) => c.label === "All Three Agree").map((combo: MatrixStatsResult) => (
     <div key={combo.label} className="p-6 mb-4 bg-gray-800 rounded shadow flex flex-col items-center w-full max-w-md">
       <h3 className="text-xl font-bold mb-2">{combo.label}</h3>
       <p className="text-base">Total Games: {combo.validPlays}</p>
@@ -810,7 +821,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
   ))}
   {/* Second row: 2-bot combos */}
   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-4 justify-center">
-    {fhgBefore30MatrixStats.filter((c: any) => ["SuperNova & Mythos", "SuperNova & Nebula", "Mythos & Nebula"].includes(c.label)).map((combo: any) => (
+    {fhgBefore30MatrixStats.filter((c: MatrixStatsResult) => ["SuperNova & Mythos", "SuperNova & Nebula", "Mythos & Nebula"].includes(c.label)).map((combo: MatrixStatsResult) => (
       <div key={combo.label} className="p-4 bg-gray-800 rounded shadow flex flex-col items-center">
         <h3 className="text-lg font-semibold mb-2">{combo.label}</h3>
         <p className="text-sm">Total: {combo.validPlays}</p>
@@ -821,7 +832,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
   </div>
   {/* Third row: single bot only */}
   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-    {fhgBefore30MatrixStats.filter((c: any) => ["SuperNova Only", "Nebula Only", "Mythos Only"].includes(c.label)).map((combo: any) => (
+    {fhgBefore30MatrixStats.filter((c: MatrixStatsResult) => ["SuperNova Only", "Nebula Only", "Mythos Only"].includes(c.label)).map((combo: MatrixStatsResult) => (
       <div key={combo.label} className="p-4 bg-gray-800 rounded shadow flex flex-col items-center">
         <h3 className="text-lg font-semibold mb-2">{combo.label}</h3>
         <p className="text-sm">Total: {combo.validPlays}</p>
@@ -844,42 +855,13 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
       });
       
       let totalGames = 0;
-      let validGames = 0;
-      let wins = 0;
-      let disregarded = 0;
       
       mythosFiltered.forEach(row => {
-        const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
-        const mythosRow = mythosLookup.get(key);
+        // const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
+        // const mythosRow = mythosLookup.get(key);
         totalGames++;
         
-        if (!mythosRow) {
-          disregarded++;
-          return;
-        }
-        
-        const firstGoalTime = mythosRow["First Goal Time"];
-        const homeHT = Number(mythosRow["Home HT Score"] || 0);
-        const awayHT = Number(mythosRow["Away HT Score"] || 0);
-        
-        // Disregard conditions
-        if (firstGoalTime === -1 || firstGoalTime === "-") {
-          disregarded++;
-          return;
-        }
-        
-        // If no first goal time but HT score >= 1, disregard
-        if ((firstGoalTime === "" || firstGoalTime == null) && (homeHT + awayHT) >= 1) {
-          disregarded++;
-          return;
-        }
-        
-        validGames++;
-        
-        // Win conditions: First Goal Time 0-31
-        if (firstGoalTime >= 0 && firstGoalTime <= 31) {
-          wins++;
-        }
+        // Note: Other calculations removed since they're not used in this display
       });
       
       return totalGames;
