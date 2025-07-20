@@ -24,6 +24,7 @@ export default function Landing() {
             .then(response => response.json())
             .then(data => {
                 console.log("API Response:", data);
+                console.log("Debug info:", data.debug);
                 console.log("Horizon data length:", data.horizon?.length);
                 console.log("First 3 horizon records:", data.horizon?.slice(0, 3));
                 // setData(data.soccer || []);
