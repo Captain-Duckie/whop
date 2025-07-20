@@ -10,392 +10,237 @@ type SoccerData = {
   [key: string]: string | number;
 };
 
-export default function Dashboard() {
-    const [data, setData] = useState<SoccerData[]>([]); 
-    const [selectedLeague, setSelectedLeague] = useState("");
-    const [selectedTeam, setSelectedTeam] = useState("");
-    const [teamFilterType, setTeamFilterType] = useState("All");
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
-
-    const clearFilters = () => {
-        setSelectedLeague(""); // Reset league selection 
-        setSelectedTeam(""); // Reset selected teams
-        setTeamFilterType("All"); // Reset team filter type
-        setStartDate("");
-        setEndDate("");
-    };
-
+export default function Landing() {
+    const [data, setData] = useState<SoccerData[]>([]);
+    const [horizonData, setHorizonData] = useState<any[]>([]);
 
     useEffect(() => {
         fetch("/api/data")
             .then(response => response.json())
-            .then(setData)
-            .catch(console.error);
-
-        fetch("/api/whop")
-            .then(response => response.json())
-            .then(data => console.log("Whop User Data:", data))
+            .then(data => {
+                setData(data.soccer || []);
+                setHorizonData(data.horizon || []);
+            })
             .catch(console.error);
     }, []);
-    useEffect(() => {
-        if (selectedLeague) {
-            setSelectedTeam(""); // Reset teams when league changes
+
+    // Get yesterday's date in YYYY-MM-DD format
+    const getYesterday = () => {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        return d.toISOString().split("T")[0];
+    };
+    const yesterday = getYesterday();
+
+    // Filter data for yesterday's results
+    const yesterdaysResults = data.filter(row => {
+        const rowDate = row.Date ? new Date(row.Date).toISOString().split("T")[0] : "";
+        return rowDate === yesterday;
+    });
+
+    // Get yesterday's date in MM/DD/YYYY format
+    const getYesterdayMMDDYYYY = () => {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        return `${mm}/${dd}/${yyyy}`;
+    };
+    const yesterdayMMDDYYYY = getYesterdayMMDDYYYY();
+
+    // Filter for yesterday's FHG plays (robust date and value matching)
+    const yesterdaysFHGPlays = horizonData.filter(row => {
+        // Defensive: trim and normalize date and FHG value
+        const dateStr = (row.Date || "").toString().trim();
+        const fhgStr = (row.FHG || "").toString().trim();
+        return dateStr === yesterdayMMDDYYYY && fhgStr.toLowerCase() === "over";
+    });
+    const numPlays = yesterdaysFHGPlays.length;
+    const numWins = yesterdaysFHGPlays.filter(row => Number(row["FH Goals"]) >= 1).length;
+    const winPct = numPlays > 0 ? ((numWins / numPlays) * 100).toFixed(1) : "0.0";
+
+    // Filter for yesterday's FTC plays (robust date and value matching)
+    const yesterdaysFTCPlays = horizonData.filter(row => {
+        const dateStr = (row.Date || "").toString().trim();
+        const ftcStr = (row.FTC || "").toString().trim().toLowerCase();
+        return dateStr === yesterdayMMDDYYYY && (ftcStr === "over" || ftcStr === "under");
+    });
+    const ftcOverPlays = yesterdaysFTCPlays.filter(row => (row.FTC || "").toString().trim().toLowerCase() === "over");
+    const ftcUnderPlays = yesterdaysFTCPlays.filter(row => (row.FTC || "").toString().trim().toLowerCase() === "under");
+    const overPlays = ftcOverPlays.length;
+    const underPlays = ftcUnderPlays.length;
+
+    let overWins = 0, overLosses = 0, overProfit = 0;
+    ftcOverPlays.forEach(row => {
+        const corners = Number(row["FT Corners"]);
+        const line = Number(row["Pregame Corner Line"]);
+        const odds = Number(row["Over Corner Odds"]) || 1.9;
+        if (corners > line) {
+            overWins++;
+            overProfit += (odds - 1);
+        } else if (corners < line) {
+            overLosses++;
+            overProfit -= 1;
         }
-    }, [selectedLeague]);
+        // Pushes are dropped from reporting
+    });
+    const overWinPct = overPlays > 0 ? ((overWins / overPlays) * 100).toFixed(1) : "0.0";
 
-      // Function to filter by team selection
-    const filterByTeam = (data: SoccerData[]) => {
-        if (!selectedTeam) return data;
+    let underWins = 0, underLosses = 0, underProfit = 0;
+    ftcUnderPlays.forEach(row => {
+        const corners = Number(row["FT Corners"]);
+        const line = Number(row["Pregame Corner Line"]);
+        const odds = Number(row["Under Corner Odds"]) || 1.9;
+        if (corners < line) {
+            underWins++;
+            underProfit += (odds - 1);
+        } else if (corners > line) {
+            underLosses++;
+            underProfit -= 1;
+        }
+        // Pushes are dropped from reporting
+    });
+    const underWinPct = underPlays > 0 ? ((underWins / underPlays) * 100).toFixed(1) : "0.0";
 
-        return data.filter((row) => {
-        if (teamFilterType === "Home") return row["Home Team"] === selectedTeam;
-        if (teamFilterType === "Away") return row["Away Team"] === selectedTeam;
-        if (teamFilterType === "All")
-            return row["Home Team"] === selectedTeam || row["Away Team"] === selectedTeam;
-        return true;
-        });
-    };
-    const filterByDateRange = (data: SoccerData[]) => {
-        if (!startDate && !endDate) return data;
+    // Full Time Goals (Asian Totals)
+    const yesterdaysFTGPlays = horizonData.filter(row => {
+        const dateStr = (row.Date || "").toString().trim();
+        const ftgStr = (row.FTG || "").toString().trim().toLowerCase();
+        return dateStr === yesterdayMMDDYYYY && (ftgStr === "over" || ftgStr === "under") && row.League !== "Argentine Division 2";
+    });
+    const ftgOverPlays = yesterdaysFTGPlays.filter(row => (row.FTG || "").toString().trim().toLowerCase() === "over");
+    const ftgUnderPlays = yesterdaysFTGPlays.filter(row => (row.FTG || "").toString().trim().toLowerCase() === "under");
 
-        return data.filter((row) => {
-        const rowDate = new Date(row.Date);
-        const start = startDate ? new Date(startDate) : null;
-        const end = endDate ? new Date(endDate) : null;
+    // Asian Total evaluation logic for FTG
+    function evaluateAsianResult(direction: "Over" | "Under", ftGoals: number, line: number): "Win" | "Loss" | "Win/Push" | "Loss/Push" | "Push" {
+        const mod = line % 1;
+        if (mod === 0.25 || mod === 0.75) {
+            const lower = line - 0.25;
+            const upper = line + 0.25;
+            if (direction === "Over") {
+                if (ftGoals > upper) return "Win";
+                if (ftGoals === upper) return "Win/Push";
+                if (ftGoals === lower) return "Loss/Push";
+                return "Loss";
+            } else {
+                if (ftGoals < lower) return "Win";
+                if (ftGoals === lower) return "Win/Push";
+                if (ftGoals === upper) return "Loss/Push";
+                return "Loss";
+            }
+        } else {
+            if (direction === "Over") {
+                if (ftGoals > line) return "Win";
+                if (ftGoals === line) return "Push";
+                return "Loss";
+            } else {
+                if (ftGoals < line) return "Win";
+                if (ftGoals === line) return "Push";
+                return "Loss";
+            }
+        }
+    }
 
-        return (!start || rowDate >= start) && (!end || rowDate <= end);
-        });
-    };
+    // Over stats (Asian Totals)
+    let ftgOverWins = 0, ftgOverLosses = 0, ftgOverWinPush = 0, ftgOverLossPush = 0, ftgOverProfit = 0;
+    ftgOverPlays.forEach(row => {
+        const ftGoals = Number(row["FT Goals"]);
+        const line = Number(row["Pregame Line"]);
+        const odds = Number(row["Over Goal Odds"]) || 1.9;
+        const result = evaluateAsianResult("Over", ftGoals, line);
+        if (result === "Win") {
+            ftgOverWins++;
+            ftgOverProfit += (odds - 1);
+        } else if (result === "Win/Push") {
+            ftgOverWinPush++;
+            ftgOverProfit += (odds - 1) / 2;
+        } else if (result === "Loss/Push") {
+            ftgOverLossPush++;
+            ftgOverProfit -= 0.5;
+        } else if (result === "Loss") {
+            ftgOverLosses++;
+            ftgOverProfit -= 1;
+        }
+        // Pushes are dropped from reporting
+    });
+    const ftgOverCount = ftgOverPlays.length;
+    const ftgOverWinPct = ftgOverCount > 0 ? ((ftgOverWins / ftgOverCount) * 100).toFixed(1) : "0.0";
 
-
-    // Apply filters before calculating stats
-    const filteredData = filterByDateRange(filterByTeam(
-    selectedLeague ? data.filter((row) => row.League === selectedLeague) : data
-    ));
-    const teamsForLeague = selectedLeague
-        ? data.filter((row) => row.League === selectedLeague)
-        : data;
-    const uniqueTeams = [
-        ...new Set(teamsForLeague.flatMap((row) => [row["Home Team"], row["Away Team"]]))
-        ].filter(Boolean) // remove null/undefined
-        .sort((a, b) => a.localeCompare(b)); // sort alphabetically
-
-
-
-    const calculateFHStats = (playType: string) => {
-        const playData = filteredData.filter((row) => row[playType] === "Over");
-        const wins = playData.filter((row) => Number(row["FH Goals"]) >= 1).length;
-        const losses = playData.filter((row) => Number(row["FH Goals"]) === 0).length;
-        const winPercentageNum =
-        playData.length > 0 ? parseFloat(((wins / playData.length) * 100).toFixed(2)) : 0;
-
-        return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
-    };
-
-    const calculateFHSharedStats = () => {
-        const sharedData = filteredData.filter(
-        (row) => row["M FHG"] === "Over" && row["SN FHG"] === "Over"
-        );
-        const wins = sharedData.filter((row) => Number(row["FH Goals"]) >= 1).length;
-        const losses = sharedData.filter((row) => Number(row["FH Goals"]) === 0).length;
-        const winPercentageNum =
-        sharedData.length > 0 ? parseFloat(((wins / sharedData.length) * 100).toFixed(2)) : 0;
-
-        return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
-    };
-  /// FT Goal Stats
-    const calculateFTGoalStats = (playType: string) => {
-        const playData = filteredData.filter((row) => row[playType] === "Over" || row[playType] === "Under");
-
-        const overPlays = playData.filter((row) => row[playType] === "Over");
-        const underPlays = playData.filter((row) => row[playType] === "Under");
-
-        const overWins = overPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
-        const overLosses = overPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
-
-        const underWins = underPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
-        const underLosses = underPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
-
-        const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-        const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
-
-        return {
-            over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-            under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-        };
-    };
-    const calculateCombinedFTGoalStats = () => {
-        const playData = filteredData.filter(
-            (row) => (row["M FTG"] === "Over" && row["SN FTG"] === "Over") || 
-                    (row["M FTG"] === "Under" && row["SN FTG"] === "Under")
-        );
-
-        const overPlays = playData.filter((row) => row["M FTG"] === "Over" && row["SN FTG"] === "Over");
-        const underPlays = playData.filter((row) => row["M FTG"] === "Under" && row["SN FTG"] === "Under");
-
-        const overWins = overPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
-        const overLosses = overPlays.filter((row) => Number(row["FT Goals"]) <= Number(row["Pregame Line"])).length;
-
-        const underWins = underPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
-        const underLosses = underPlays.filter((row) => Number(row["FT Goals"]) >= Number(row["Pregame Line"])).length;
-
-        const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-        const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
-
-        return {
-            over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-            under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-        };
-    };
-
-    const calculateFTCStats = (playType: string) => {
-        const playData = filteredData.filter((row) => row[playType] === "Over" || row[playType] === "Under");
-
-        const overPlays = playData.filter((row) => row[playType] === "Over");
-        const underPlays = playData.filter((row) => row[playType] === "Under");
-
-        const overWins = overPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
-        const overLosses = overPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
-
-        const underWins = underPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
-        const underLosses = underPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
-
-        const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-        const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
-
-        return {
-            over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-            under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-        };
-    };
-    const calculateCombinedFTCStats = () => {
-        const playData = filteredData.filter(
-            (row) => (row["M FTC"] === "Over" && row["SN FTC"] === "Over") || 
-                    (row["M FTC"] === "Under" && row["SN FTC"] === "Under")
-        );
-
-        const overPlays = playData.filter((row) => row["M FTC"] === "Over" && row["SN FTC"] === "Over");
-        const underPlays = playData.filter((row) => row["M FTC"] === "Under" && row["SN FTC"] === "Under");
-
-        const overWins = overPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
-        const overLosses = overPlays.filter((row) => Number(row["FT Corners"]) <= Number(row["Pregame Corner Line"])).length;
-
-        const underWins = underPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
-        const underLosses = underPlays.filter((row) => Number(row["FT Corners"]) >= Number(row["Pregame Corner Line"])).length;
-
-        const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-        const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
-
-        return {
-            over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-            under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-        };
-    };
-
-    const sharedFTGoalStats = calculateCombinedFTGoalStats();
-    const fullTimeGoalStatsMythos = calculateFTGoalStats("M FTG");
-    const fullTimeGoalStatsSuperNova = calculateFTGoalStats("SN FTG");
-
-    const sharedFTCStats = calculateCombinedFTCStats();
-    const fullTimeCornerStatsMythos = calculateFTCStats("M FTC");
-    const fullTimeCornerStatsSuperNova = calculateFTCStats("SN FTC");
-
-    const supernovaStats = calculateFHStats("SN FHG");
-    const mythosStats = calculateFHStats("M FHG");
-    const sharedStats = calculateFHSharedStats();
-    const nebulaStats = calculateFHStats("Nebula");
-
+    // Under stats (Asian Totals)
+    let ftgUnderWins = 0, ftgUnderLosses = 0, ftgUnderWinPush = 0, ftgUnderLossPush = 0, ftgUnderProfit = 0;
+    ftgUnderPlays.forEach(row => {
+        const ftGoals = Number(row["FT Goals"]);
+        const line = Number(row["Pregame Line"]);
+        const odds = Number(row["Under Goal Odds"]) || 1.9;
+        const result = evaluateAsianResult("Under", ftGoals, line);
+        if (result === "Win") {
+            ftgUnderWins++;
+            ftgUnderProfit += (odds - 1);
+        } else if (result === "Win/Push") {
+            ftgUnderWinPush++;
+            ftgUnderProfit += (odds - 1) / 2;
+        } else if (result === "Loss/Push") {
+            ftgUnderLossPush++;
+            ftgUnderProfit -= 0.5;
+        } else if (result === "Loss") {
+            ftgUnderLosses++;
+            ftgUnderProfit -= 1;
+        }
+        // Pushes are dropped from reporting
+    });
+    const ftgUnderCount = ftgUnderPlays.length;
+    const ftgUnderWinPct = ftgUnderCount > 0 ? ((ftgUnderWins / ftgUnderCount) * 100).toFixed(1) : "0.0";
 
     return (
-        <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Mythos Soccer Dashboard</h1>
-
-        {/* League Filter Dropdown */}
-        <select
-            className="mb-4 p-2 border bg-gray-800 text-white"
-            onChange={(e) => setSelectedLeague(e.target.value)}
-            value={selectedLeague}
-        >
-            <option value="">All Leagues</option>
-            {data.length > 0 &&
-            [...new Set(data.map((row) => row.League))].map((league) => (
-                <option key={league} value={league}>
-                {league}
-                </option>
-            ))}
-        </select>
-
-            <select
-            className="mb-4 p-2 border bg-gray-800 text-white"
-            onChange={(e) => setSelectedTeam(e.target.value)}
-            value={selectedTeam}
-            >
-            <option value="">All Teams</option>
-            {uniqueTeams.map((team) => (
-                <option key={team} value={team}>
-                {team}
-                </option>
-            ))}
-            </select>
-
-
-        {/* Team Filter Type Dropdown */}
-        <select
-            className="mb-4 p-2 border bg-gray-800 text-white"
-            onChange={(e) => setTeamFilterType(e.target.value)}
-            value={teamFilterType}
-        >
-            <option value="All">All Games</option>
-            <option value="Home">Home Team</option>
-            <option value="Away">Away Team</option>
-        </select>
-
-         {/* Date Filter Boxes */}
-        <div className="flex gap-4 mb-4">
-          <input
-              type="date"
-              className="p-2 border bg-gray-800 text-white"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-          />
-          <input
-              type="date"
-              className="p-2 border bg-gray-800 text-white"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-          />
-          </div>
-
-        <button 
-            onClick={clearFilters} 
-            className="mb-4 p-2 border bg-red-600 text-white rounded hover:bg-red-700"
-        >
-            Clear Filters
-        </button>
-
-        {/* Summary Statistic Cards */}
-        <h2 className="text-2xl font-bold mt-6 mb-2">First Half Goals</h2>
-        <div className="grid grid-cols-3 gap-4">
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Supernova</h2>
-                <p className="text-sm">Wins: {supernovaStats.wins}</p>
-                <p className="text-sm">Losses: {supernovaStats.losses}</p>
-                <p className="text-sm">Win %: {supernovaStats.winPercentage}</p>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+            <h1 className="text-4xl font-bold mb-6">Welcome to Stellariea Sports!</h1>
+            <p className="mb-8 text-lg">Yesterday's Results</p>
+            <div className="w-full max-w-md mb-8">
+                <div className="bg-gray-800 rounded shadow p-6 flex flex-col items-center">
+                    <h2 className="text-xl font-semibold mb-2">First Half Goals (FHG)</h2>
+                    <p className="text-lg">Plays: <span className="font-bold">{numPlays}</span></p>
+                    <p className="text-lg">Wins: <span className="font-bold">{numWins}</span></p>
+                    <p className="text-lg"><span className="font-bold">{winPct}% Win Rate</span></p>
+                </div>
             </div>
-
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Mythos</h2>
-                <p className="text-sm">Wins: {mythosStats.wins}</p>
-                <p className="text-sm">Losses: {mythosStats.losses}</p>
-                <p className="text-sm">Win %: {mythosStats.winPercentage}</p>
+            <div className="w-full max-w-md mb-8">
+                <div className="bg-gray-800 rounded shadow p-6 flex flex-col items-center">
+                    <h2 className="text-xl font-semibold mb-4 text-center">Full Time Corners (FTC): <span className="font-bold">{(overProfit + underProfit).toFixed(2)}</span></h2>
+                    <div className="w-full flex flex-col gap-4 items-center">
+                        <div className="mb-2 text-center">
+                            <span className="font-semibold">Overs:</span> {overWins} W / {overLosses} L<br />
+                            <span className="font-bold">{overProfit.toFixed(2)}U profit @ {overPlays > 0 ? ((overProfit / overPlays) * 100).toFixed(1) : "0"}% ROI</span>
+                        </div>
+                        <div className="text-center">
+                            <span className="font-semibold">Unders:</span> {underWins} W / {underLosses} L<br />
+                            <span className="font-bold">{underProfit.toFixed(2)}U profit @ {underPlays > 0 ? ((underProfit / underPlays) * 100).toFixed(1) : "0"}% ROI</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Shared</h2>
-                <p className="text-sm">Wins: {sharedStats.wins}</p>
-                <p className="text-sm">Losses: {sharedStats.losses}</p>
-                <p className="text-sm">Win %: {sharedStats.winPercentage}</p>
+            <div className="w-full max-w-md mb-8">
+                <div className="bg-gray-800 rounded shadow p-6 flex flex-col items-center">
+                    <h2 className="text-xl font-semibold mb-4 text-center">Full Time Goals (FTG, Asian Totals): <span className="font-bold">{(ftgOverProfit + ftgUnderProfit).toFixed(2)}</span></h2>
+                    <div className="w-full flex flex-col gap-4 items-center">
+                        <div className="mb-2 text-center">
+                            <span className="font-semibold">Overs:</span> {ftgOverWins} W / {ftgOverWinPush} WP / {ftgOverLossPush} LP / {ftgOverLosses} L<br />
+                            <span className="font-bold">{ftgOverProfit.toFixed(2)}U profit @ {ftgOverCount > 0 ? ((ftgOverProfit / ftgOverCount) * 100).toFixed(1) : "0"}% ROI</span>
+                        </div>
+                        <div className="text-center">
+                            <span className="font-semibold">Unders:</span> {ftgUnderWins} W / {ftgUnderWinPush} WP / {ftgUnderLossPush} LP / {ftgUnderLosses} L<br />
+                            <span className="font-bold">{ftgUnderProfit.toFixed(2)}U profit @ {ftgUnderCount > 0 ? ((ftgUnderProfit / ftgUnderCount) * 100).toFixed(1) : "0"}% ROI</span>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <a href="/dashboard">
+                <button className="mt-8 px-6 py-3 bg-blue-600 rounded text-white font-semibold hover:bg-blue-700 transition">Go to Dashboard</button>
+            </a>
         </div>
-        {/* Second row: Nebula */}
-        <div className="grid grid-cols-1">
-            <div className="p-4 border rounded shadow">
-            <h2 className="text-lg font-semibold">Nebula</h2>
-            <p className="text-sm">Wins: {nebulaStats.wins}</p>
-            <p className="text-sm">Losses: {nebulaStats.losses}</p>
-            <p className="text-sm">Win %: {nebulaStats.winPercentage}</p>
-            </div>
-        </div>
-        {/* Full-Time Corner Stats - 3rd Row */}
-        <h2 className="text-2xl font-bold mt-6 mb-2">Full Time Corners - Overs are Backend Only</h2>
-        <div className="grid grid-cols-3 gap-4 mt-4">
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Over - SuperNova</h2>
-                <p className="text-sm">Wins: {fullTimeCornerStatsSuperNova.over.wins}</p>
-                <p className="text-sm">Losses: {fullTimeCornerStatsSuperNova.over.losses}</p>
-                <p className="text-sm">Win %: {fullTimeCornerStatsSuperNova.over.winPercentage}</p>
-            </div>
-
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Over - Mythos</h2>
-                <p className="text-sm">Wins: {fullTimeCornerStatsMythos.over.wins}</p>
-                <p className="text-sm">Losses: {fullTimeCornerStatsMythos.over.losses}</p>
-                <p className="text-sm">Win %: {fullTimeCornerStatsMythos.over.winPercentage}</p>
-            </div>
-
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Over - Shared</h2>
-                <p className="text-sm">Wins: {sharedFTCStats.over.wins}</p>
-                <p className="text-sm">Losses: {sharedFTCStats.over.losses}</p>
-                <p className="text-sm">Win %: {sharedFTCStats.over.winPercentage}</p>
-            </div>
-
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Under - SuperNova</h2>
-                <p className="text-sm">Wins: {fullTimeCornerStatsSuperNova.under.wins}</p>
-                <p className="text-sm">Losses: {fullTimeCornerStatsSuperNova.under.losses}</p>
-                <p className="text-sm">Win %: {fullTimeCornerStatsSuperNova.under.winPercentage}</p>
-            </div>
-
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Under - Mythos</h2>
-                <p className="text-sm">Wins: {fullTimeCornerStatsMythos.under.wins}</p>
-                <p className="text-sm">Losses: {fullTimeCornerStatsMythos.under.losses}</p>
-                <p className="text-sm">Win %: {fullTimeCornerStatsMythos.under.winPercentage}</p>
-            </div>
-
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Under - Shared</h2>
-                <p className="text-sm">Wins: {sharedFTCStats.under.wins}</p>
-                <p className="text-sm">Losses: {sharedFTCStats.under.losses}</p>
-                <p className="text-sm">Win %: {sharedFTCStats.under.winPercentage}</p>
-            </div>
-        </div>
-        {/* Full-Time Goal Stats - Second Row */}
-        <h2 className="text-2xl font-bold mt-6 mb-2">Full Time Goals - Backend Only</h2>
-        <div className="grid grid-cols-3 gap-4 mt-4">
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Over - SuperNova</h2>
-                <p className="text-sm">Wins: {fullTimeGoalStatsSuperNova.over.wins}</p>
-                <p className="text-sm">Losses: {fullTimeGoalStatsSuperNova.over.losses}</p>
-                <p className="text-sm">Win %: {fullTimeGoalStatsSuperNova.over.winPercentage}</p>
-            </div>
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Over - Mythos</h2>
-                <p className="text-sm">Wins: {fullTimeGoalStatsMythos.over.wins}</p>
-                <p className="text-sm">Losses: {fullTimeGoalStatsMythos.over.losses}</p>
-                <p className="text-sm">Win %: {fullTimeGoalStatsMythos.over.winPercentage}</p>
-            </div>
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Over - Shared</h2>
-                <p className="text-sm">Wins: {sharedFTGoalStats.over.wins}</p>
-                <p className="text-sm">Losses: {sharedFTGoalStats.over.losses}</p>
-                <p className="text-sm">Win %: {sharedFTGoalStats.over.winPercentage}</p>
-            </div>
-
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Under - SuperNova</h2>
-                <p className="text-sm">Wins: {fullTimeGoalStatsSuperNova.under.wins}</p>
-                <p className="text-sm">Losses: {fullTimeGoalStatsSuperNova.under.losses}</p>
-                <p className="text-sm">Win %: {fullTimeGoalStatsSuperNova.under.winPercentage}</p>
-            </div>
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Under - Mythos</h2>
-                <p className="text-sm">Wins: {fullTimeGoalStatsMythos.under.wins}</p>
-                <p className="text-sm">Losses: {fullTimeGoalStatsMythos.under.losses}</p>
-                <p className="text-sm">Win %: {fullTimeGoalStatsMythos.under.winPercentage}</p>
-            </div>
-
-            <div className="p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">Under - Shared</h2>
-                <p className="text-sm">Wins: {sharedFTGoalStats.under.wins}</p>
-                <p className="text-sm">Losses: {sharedFTGoalStats.under.losses}</p>
-                <p className="text-sm">Win %: {sharedFTGoalStats.under.winPercentage}</p>
-            </div>
-        </div>
-    </div>
-        
     );
 }
+
+// npm run dev to start
+// kill-port 3000 to kill
 
