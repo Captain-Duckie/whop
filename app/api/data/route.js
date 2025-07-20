@@ -19,7 +19,7 @@ export async function GET() {
         // Read Horizon data from Horizon Records file
         const horizonFileBuffer = fs.readFileSync(horizonFilePath);
         const horizonWorkbook = XLSX.read(horizonFileBuffer, { type: 'buffer' });
-        const horizonSheetName = horizonWorkbook.SheetNames[0]; // Use first sheet
+        const horizonSheetName = "Horizon";
         const horizonSheet = horizonWorkbook.Sheets[horizonSheetName];
         const horizonData = XLSX.utils.sheet_to_json(horizonSheet);
 
