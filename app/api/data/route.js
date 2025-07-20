@@ -8,7 +8,7 @@ export async function GET() {
         // Path to your Excel files
         const soccerFilePath = path.join(process.cwd(), 'public', 'Soccer Records.xlsx');
         const horizonFilePath = path.join(process.cwd(), 'public', 'Horizon Records.xlsx');
-        const mythosFilePath = path.join(process.cwd(), 'public', 'Horizon Dataset.xlsx');
+        const mythosFilePath = path.join(process.cwd(), 'public', 'Mythos Dataset.xlsx');
 
         console.log("File paths:", { soccerFilePath, horizonFilePath, mythosFilePath });
 
@@ -25,7 +25,6 @@ export async function GET() {
         const soccerData = XLSX.utils.sheet_to_json(soccerSheet);
         console.log("Soccer data length:", soccerData.length);
 
-
         // Read Soccer Records file (main dataset)
         const horizonFileBuffer = fs.readFileSync(horizonFilePath);
         const horizonWorkbook = XLSX.read(horizonFileBuffer, { type: 'buffer' });
@@ -34,7 +33,6 @@ export async function GET() {
         const horizonData = XLSX.utils.sheet_to_json(horizonSheet);
         console.log("Horizon data length:", horizonData.length);
 
-       
         // Read Mythos Dataset file
         const mythosFileBuffer = fs.readFileSync(mythosFilePath);
         const mythosWorkbook = XLSX.read(mythosFileBuffer, { type: 'buffer' });
