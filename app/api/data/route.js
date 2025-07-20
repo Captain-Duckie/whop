@@ -74,6 +74,7 @@ export async function GET() {
             horizon: horizonData,
             mythos: mythosData,
             debug: {
+                timestamp: new Date().toISOString(),
                 horizonFileExists: fs.existsSync(horizonFilePath),
                 horizonFilePath: horizonFilePath,
                 publicDirFiles: fs.readdirSync(path.join(process.cwd(), 'public')),
@@ -82,7 +83,7 @@ export async function GET() {
         }), {
             headers: { 
                 'Content-Type': 'application/json',
-                'Cache-Control': 'public, max-age=3600, stale-while-revalidate=7200'
+                'Cache-Control': 'no-cache, no-store, must-revalidate'
             }
         });
 
