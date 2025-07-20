@@ -20,7 +20,7 @@ export default function Landing() {
     const [horizonData, setHorizonData] = useState<SoccerData[]>([]);
 
     useEffect(() => {
-        fetch("/api/data")
+        fetch(`/api/data?t=${Date.now()}`)
             .then(response => response.json())
             .then(data => {
                 console.log("API Response:", data);
