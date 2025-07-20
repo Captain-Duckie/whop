@@ -23,6 +23,9 @@ export default function Landing() {
         fetch("/api/data")
             .then(response => response.json())
             .then(data => {
+                console.log("API Response:", data);
+                console.log("Horizon data length:", data.horizon?.length);
+                console.log("First 3 horizon records:", data.horizon?.slice(0, 3));
                 // setData(data.soccer || []);
                 setHorizonData(data.horizon || []);
             })
@@ -195,6 +198,18 @@ export default function Landing() {
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
             <h1 className="text-4xl font-bold mb-6">Welcome to Stellariea Sports!</h1>
             <p className="mb-8 text-lg">Yesterday&apos;s Results</p>
+            
+            {/* Debug Section */}
+            <div className="w-full max-w-md mb-8 p-4 bg-red-800 rounded shadow">
+                <h3 className="text-lg font-bold mb-2">Debug Info</h3>
+                <p className="text-sm">Horizon Data Length: {horizonData.length}</p>
+                <p className="text-sm">Yesterday Date: {yesterdayMMDDYYYY}</p>
+                <p className="text-sm">Sample Horizon Record:</p>
+                <pre className="text-xs bg-gray-900 p-2 rounded mt-2 overflow-auto">
+                    {horizonData.length > 0 ? JSON.stringify(horizonData[0], null, 2) : "No data"}
+                </pre>
+            </div>
+            
             <div className="w-full max-w-md mb-8">
                 <div className="bg-gray-800 rounded shadow p-6 flex flex-col items-center">
                     <h2 className="text-xl font-semibold mb-2">First Half Goals (FHG)</h2>
