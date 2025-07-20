@@ -212,18 +212,18 @@ export default function SearchResults() {
         };
     };
 
-    const sharedFTGoalStats = calculateCombinedFTGoalStats();
-    const fullTimeGoalStatsMythos = calculateFTGoalStats("M FTG");
-    const fullTimeGoalStatsSuperNova = calculateFTGoalStats("SN FTG");
+    // const sharedFTGoalStats = calculateCombinedFTGoalStats();
+    // const fullTimeGoalStatsMythos = calculateFTGoalStats("M FTG");
+    // const fullTimeGoalStatsSuperNova = calculateFTGoalStats("SN FTG");
 
-    const sharedFTCStats = calculateCombinedFTCStats();
-    const fullTimeCornerStatsMythos = calculateFTCStats("M FTC");
-    const fullTimeCornerStatsSuperNova = calculateFTCStats("SN FTC");
+    // const sharedFTCStats = calculateCombinedFTCStats();
+    // const fullTimeCornerStatsMythos = calculateFTCStats("M FTC");
+    // const fullTimeCornerStatsSuperNova = calculateFTCStats("SN FTC");
 
-    const supernovaStats = calculateFHStats("SN FHG");
-    const mythosStats = calculateFHStats("M FHG");
-    const sharedStats = calculateFHSharedStats();
-    const nebulaStats = calculateFHStats("Nebula");
+    // const supernovaStats = calculateFHStats("SN FHG");
+    // const mythosStats = calculateFHStats("M FHG");
+    // const sharedStats = calculateFHSharedStats();
+    // const nebulaStats = calculateFHStats("Nebula");
 
 
     // --- FHG Correlation Matrix Logic ---
