@@ -25,13 +25,42 @@ export async function GET() {
         const soccerData = XLSX.utils.sheet_to_json(soccerSheet);
         console.log("Soccer data length:", soccerData.length);
 
-        // Read Soccer Records file (main dataset)
-        const horizonFileBuffer = fs.readFileSync(horizonFilePath);
-        const horizonWorkbook = XLSX.read(horizonFileBuffer, { type: 'buffer' });
-        const horizonSheetName = "Horizon";
-        const horizonSheet = horizonWorkbook.Sheets[horizonSheetName];
-        const horizonData = XLSX.utils.sheet_to_json(horizonSheet);
-        console.log("Horizon data length:", horizonData.length);
+        // Read Horizon Records file with detailed debugging
+        console.log("Reading Horizon file...");
+        let horizonData = [];
+        try {
+            const horizonFileBuffer = fs.readFileSync(horizonFilePath);
+            console.log("Horizon file buffer size:", horizonFileBuffer.length);
+            const horizonWorkbook = XLSX.read(horizonFileBuffer, { type: 'buffer' });
+            console.log("Horizon sheet names available:", horizonWorkbook.SheetNames);
+            
+            // Check if "Horizon" sheet exists, otherwise use first sheet
+            let horizonSheetName = "Horizon";
+            if (!horizonWorkbook.Sheets[horizonSheetName]) {
+                console.log("'Horizon' sheet not found, using first sheet:", horizonWorkbook.SheetNames[0]);
+                horizonSheetName = horizonWorkbook.SheetNames[0];
+            }
+            
+            console.log("Using Horizon sheet:", horizonSheetName);
+            const horizonSheet = horizonWorkbook.Sheets[horizonSheetName];
+            
+            if (!horizonSheet) {
+                console.error("Horizon sheet is null or undefined");
+                horizonData = [];
+            } else {
+                horizonData = XLSX.utils.sheet_to_json(horizonSheet);
+                console.log("Horizon data length:", horizonData.length);
+                if (horizonData.length > 0) {
+                    console.log("First horizon record:", horizonData[0]);
+                    console.log("Horizon columns:", Object.keys(horizonData[0]));
+                } else {
+                    console.log("Horizon sheet appears to be empty");
+                }
+            }
+        } catch (horizonError) {
+            console.error("Error reading Horizon file:", horizonError);
+            horizonData = [];
+        }
 
         // Read Mythos Dataset file
         const mythosFileBuffer = fs.readFileSync(mythosFilePath);
