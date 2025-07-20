@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 
 // ✅ Move type definition **above** Dashboard()
 type SoccerData = {
@@ -12,6 +12,10 @@ type SoccerData = {
 };
 
 export default function Landing() {
+    const params = useParams();
+    const router = useRouter();
+    const experienceId = params.experienceId as string;
+    
     // const [data, setData] = useState<SoccerData[]>([]);
     const [horizonData, setHorizonData] = useState<SoccerData[]>([]);
 
@@ -229,9 +233,12 @@ export default function Landing() {
                     </div>
                 </div>
             </div>
-            <Link href="{`/experience/${experienceId}/dashboard`}">
-              <button className="mt-8 px-6 py-3 bg-blue-600 rounded text-white font-semibold hover:bg-blue-700 transition">Go to Dashboard</button>
-            </Link>
+            <button 
+                onClick={() => router.push(`/experience/${experienceId}/dashboard`)}
+                className="mt-8 px-6 py-3 bg-blue-600 rounded text-white font-semibold hover:bg-blue-700 transition"
+            >
+                Go to Dashboard
+            </button>
         </div>
     );
 }
