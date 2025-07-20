@@ -2,58 +2,48 @@ import fs from 'fs';
 import path from 'path';
 import * as XLSX from 'xlsx';
 
-export async function GET(req) {
+export async function GET() {
     try {
-        // Soccer Records
-        const soccerPath = path.join(process.cwd(), 'public', 'Soccer Records.xlsx');
-        const soccerBuffer = fs.readFileSync(soccerPath);
-        const soccerWorkbook = XLSX.read(soccerBuffer, { type: 'buffer' });
-        const soccerSheet = soccerWorkbook.Sheets["Mythos Soccer"];
+        // Path to your Excel files
+        const soccerFilePath = path.join(process.cwd(), 'public', 'Soccer Records.xlsx');
+        const horizonFilePath = path.join(process.cwd(), 'public', 'Soccer Records.xlsx');
+        const mythosFilePath = path.join(process.cwd(), 'public', 'Mythos Dataset.xlsx');
+
+        // Read Soccer Records file (main dataset)
+        const soccerFileBuffer = fs.readFileSync(soccerFilePath);
+        const soccerWorkbook = XLSX.read(soccerFileBuffer, { type: 'buffer' });
+        const soccerSheetName = "Mythos Soccer";
+        const soccerSheet = soccerWorkbook.Sheets[soccerSheetName];
         const soccerData = XLSX.utils.sheet_to_json(soccerSheet);
 
-        // Horizon Records
-        const horizonPath = path.join(process.cwd(), 'public', 'Horizon Records.xlsx');
-        const horizonBuffer = fs.readFileSync(horizonPath);
-        const horizonWorkbook = XLSX.read(horizonBuffer, { type: 'buffer' });
-        const horizonSheet = horizonWorkbook.Sheets["Horizon"] || horizonWorkbook.Sheets[Object.keys(horizonWorkbook.Sheets)[0]];
+        // Read Horizon data from Soccer Records file
+        const horizonFileBuffer = fs.readFileSync(horizonFilePath);
+        const horizonWorkbook = XLSX.read(horizonFileBuffer, { type: 'buffer' });
+        const horizonSheetName = "Horizon";
+        const horizonSheet = horizonWorkbook.Sheets[horizonSheetName];
         const horizonData = XLSX.utils.sheet_to_json(horizonSheet);
 
-        // Mythos Dataset
-        const mythosPath = path.join(process.cwd(), 
-        'public', 'Mythos Dataset.xlsx');
-        let mythosData = [];
-        if (fs.existsSync(mythosPath)) {
-            const mythosBuffer = fs.readFileSync(mythosPath);
-            const mythosWorkbook = XLSX.read(mythosBuffer, { type: 'buffer' });
-            const mythosSheet = mythosWorkbook.Sheets["Soccer"];
-            if (mythosSheet) {
-                mythosData = XLSX.utils.sheet_to_json(mythosSheet);
-            }
-        }
-        // Debug output for Mythos Dataset
-        console.log("Mythos Dataset loaded:", mythosData.length, "rows");
-        if (mythosData.length > 0) {
-            console.log("First few Mythos rows:", mythosData.slice(0, 3));
-        } else {
-            console.log("Mythos Dataset is empty or sheet not found.");
-        }
+        // Read Mythos Dataset file
+        const mythosFileBuffer = fs.readFileSync(mythosFilePath);
+        const mythosWorkbook = XLSX.read(mythosFileBuffer, { type: 'buffer' });
+        const mythosSheetName = mythosWorkbook.SheetNames[0]; // Use first sheet
+        const mythosSheet = mythosWorkbook.Sheets[mythosSheetName];
+        const mythosData = XLSX.utils.sheet_to_json(mythosSheet);
 
-        // Debug output
-        //console.log("Soccer Records loaded:", soccerData.length, "rows");
-        //console.log("Horizon Records loaded:", horizonData.length, "rows");
-        //console.log("First few Horizon rows:", horizonData.slice(0, 3));
-
-        return new Response(JSON.stringify({
+        const response = new Response(JSON.stringify({
             soccer: soccerData,
             horizon: horizonData,
             mythos: mythosData
         }), {
             headers: { 
                 'Content-Type': 'application/json',
-                'Cache-Control': 'public, max-age=3600, stale-while-revalidate=7200' // Cache for 1 hour, allow stale for 2 hours
+                'Cache-Control': 'public, max-age=3600, stale-while-revalidate=7200'
             }
         });
+
+        return response;
     } catch (error) {
+        console.error('Error loading data:', error);
         return new Response(
             JSON.stringify({ error: 'Failed to load data' }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
