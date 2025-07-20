@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 // ✅ Move type definition **above** Dashboard()
 type SoccerData = {
@@ -35,6 +36,10 @@ type MatrixStatsResult = {
 };
 
 export default function SearchResults() {
+    const params = useParams();
+    const router = useRouter();
+    const experienceId = params.experienceId as string;
+    
     const [data, setData] = useState<SoccerData[]>([]); 
     const [selectedLeague, setSelectedLeague] = useState("");
     const [selectedTeam, setSelectedTeam] = useState("");
@@ -629,7 +634,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
         <div className="w-full max-w-6xl relative mb-4">
             <h1 className="text-2xl font-bold text-center">Mythos Soccer Dashboard</h1>
             <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => router.push(`/experience/${experienceId}`)}
                 className="absolute top-0 right-0 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
             >
                 Back to Home
