@@ -69,7 +69,7 @@ export async function GET() {
         }), {
             headers: { 
                 'Content-Type': 'application/json',
-                'Cache-Control': 'public, max-age=600, s-maxage=600' // Cache for 50 minutes
+                'Cache-Control': 'public, max-age=20, s-maxage=20' // Cache for 50 minutes
             }
         });
 
