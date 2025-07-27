@@ -116,132 +116,6 @@ export default function SearchResults() {
         ].filter(Boolean) // remove null/undefined
         .sort((a, b) => a.localeCompare(b)); // sort alphabetically
 
-
-
-    // const calculateFHStats = (playType: string) => {
-    //     const playData = filteredData.filter((row) => row[playType] === "Over");
-    //     const wins = playData.filter((row) => Number(row["FH Goals"]) >= 1).length;
-    //     const losses = playData.filter((row) => Number(row["FH Goals"]) === 0).length;
-    //     const winPercentageNum =
-    //     playData.length > 0 ? parseFloat(((wins / playData.length) * 100).toFixed(2)) : 0;
-
-    //     return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
-    // };
-
-    // const calculateFHSharedStats = () => {
-    //     const sharedData = filteredData.filter(
-    //     (row) => row["M FHG"] === "Over" && row["SN FHG"] === "Over"
-    //     );
-    //     const wins = sharedData.filter((row) => Number(row["FH Goals"]) >= 1).length;
-    //     const losses = sharedData.filter((row) => Number(row["FH Goals"]) === 0).length;
-    //     const winPercentageNum =
-    //     sharedData.length > 0 ? parseFloat(((wins / sharedData.length) * 100).toFixed(2)) : 0;
-
-    //     return { wins, losses, winPercentage: isNaN(winPercentageNum) ? "N/A" : `${winPercentageNum}%` };
-    // };
-  /// FT Goal Stats
-    // const calculateFTGoalStats = (playType: string) => {
-    //     const playData = filteredData.filter((row) => row[playType] === "Over" || row[playType] === "Under");
-
-    //     const overPlays = playData.filter((row) => row[playType] === "Over");
-    //     const underPlays = playData.filter((row) => row[playType] === "Under");
-
-    //     const overWins = overPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
-    //     const overLosses = overPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
-
-    //     const underWins = underPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
-    //     const underLosses = underPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
-
-    //     const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-    //     const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
-
-    //     return {
-    //         over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-    //         under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-    //     };
-    // };
-    // const calculateCombinedFTGoalStats = () => {
-    //     const playData = filteredData.filter(
-    //         (row) => (row["M FTG"] === "Over" && row["SN FTG"] === "Over") || 
-    //                 (row["M FTG"] === "Under" && row["SN FTG"] === "Under")
-    //     );
-
-    //     const overPlays = playData.filter((row) => row["M FTG"] === "Over" && row["SN FTG"] === "Over");
-    //     const underPlays = playData.filter((row) => row["M FTG"] === "Under" && row["SN FTG"] === "Under");
-
-    //     const overWins = overPlays.filter((row) => Number(row["FT Goals"]) > Number(row["Pregame Line"])).length;
-    //     const overLosses = overPlays.filter((row) => Number(row["FT Goals"]) <= Number(row["Pregame Line"])).length;
-
-    //     const underWins = underPlays.filter((row) => Number(row["FT Goals"]) < Number(row["Pregame Line"])).length;
-    //     const underLosses = underPlays.filter((row) => Number(row["FT Goals"]) >= Number(row["Pregame Line"])).length;
-
-    //     const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-    //     const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
-
-    //     return {
-    //         over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-    //         under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-    //     };
-    // };
-
-    // const calculateFTCStats = (playType: string) => {
-    //     const playData = filteredData.filter((row) => row[playType] === "Over" || row[playType] === "Under");
-
-    //     const overPlays = playData.filter((row) => row[playType] === "Over");
-    //     const underPlays = playData.filter((row) => row[playType] === "Under");
-
-    //     const overWins = overPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
-    //     const overLosses = overPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
-
-    //     const underWins = underPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
-    //     const underLosses = underPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
-
-    //     const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-    //     const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
-
-    //     return {
-    //         over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-    //         under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-    //     };
-    // };
-    // const calculateCombinedFTCStats = () => {
-    //     const playData = filteredData.filter(
-    //         (row) => (row["M FTC"] === "Over" && row["SN FTC"] === "Over") || 
-    //                 (row["M FTC"] === "Under" && row["SN FTC"] === "Under")
-    //     );
-
-    //     const overPlays = playData.filter((row) => row["M FTC"] === "Over" && row["SN FTC"] === "Over");
-    //     const underPlays = playData.filter((row) => row["M FTC"] === "Under" && row["SN FTC"] === "Under");
-
-    //     const overWins = overPlays.filter((row) => Number(row["FT Corners"]) > Number(row["Pregame Corner Line"])).length;
-    //     const overLosses = overPlays.filter((row) => Number(row["FT Corners"]) <= Number(row["Pregame Corner Line"])).length;
-
-    //     const underWins = underPlays.filter((row) => Number(row["FT Corners"]) < Number(row["Pregame Corner Line"])).length;
-    //     const underLosses = underPlays.filter((row) => Number(row["FT Corners"]) >= Number(row["Pregame Corner Line"])).length;
-
-    //     const overWinPercentage = (overWins + overLosses) > 0 ? ((overWins / (overWins + overLosses)) * 100).toFixed(2) : "N/A";
-    //     const underWinPercentage = (underWins + underLosses) > 0 ? ((underWins / (underWins + underLosses)) * 100).toFixed(2) : "N/A";
-
-    //     return {
-    //         over: { wins: overWins, losses: overLosses, winPercentage: `${overWinPercentage}%` },
-    //         under: { wins: underWins, losses: underLosses, winPercentage: `${underWinPercentage}%` },
-    //     };
-    // };
-
-    // const sharedFTGoalStats = calculateCombinedFTGoalStats();
-    // const fullTimeGoalStatsMythos = calculateFTGoalStats("M FTG");
-    // const fullTimeGoalStatsSuperNova = calculateFTGoalStats("SN FTG");
-
-    // const sharedFTCStats = calculateCombinedFTCStats();
-    // const fullTimeCornerStatsMythos = calculateFTCStats("M FTC");
-    // const fullTimeCornerStatsSuperNova = calculateFTCStats("SN FTC");
-
-    // const supernovaStats = calculateFHStats("SN FHG");
-    // const mythosStats = calculateFHStats("M FHG");
-    // const sharedStats = calculateFHSharedStats();
-    // const nebulaStats = calculateFHStats("Nebula");
-
-
     // --- FHG Correlation Matrix Logic ---
     // Helper to check bot signals
     const getFHGSignals = (row: SoccerData): FHGSignals => ({
@@ -299,44 +173,6 @@ export default function SearchResults() {
         };
     });
 
-    // --- Correlation Matrix for First Half Goals ---
-// const calculateFHGCorrelations = () => {
-//     // Each row: which bots pinged "Over" for FHG
-//     type ComboKey = string;
-//     type ComboStats = { label: string; count: number; wins: number; losses: number; winRate: string };
-//     const combos: Record<ComboKey, ComboStats> = {};
-//     filteredData.forEach((row) => {
-//         const bots: string[] = [];
-//         if (row["SN FHG"] === "Over") bots.push("SuperNova");
-//         if (row["M FHG"] === "Over") bots.push("Mythos");
-//         if (row["Nebula"] === "Over") bots.push("Nebula");
-//         // Key: sorted bot names joined by "+" (e.g. "SuperNova+Mythos")
-//         const key = bots.sort().join("+");
-//         if (!combos[key]) {
-//             combos[key] = {
-//                 label: bots.length ? bots.join(" + ") : "None",
-//                 count: 0,
-//                 wins: 0,
-//                 losses: 0,
-//                 winRate: "N/A",
-//             };
-//         }
-//         combos[key].count++;
-//         if (bots.length && Number(row["FH Goals"]) >= 1) {
-//             combos[key].wins++;
-//         } else if (bots.length) {
-//             combos[key].losses++;
-//         }
-//     });
-//     // Calculate win rates
-//     Object.values(combos).forEach((combo) => {
-//         const total = combo.wins + combo.losses;
-//         combo.winRate = total > 0 ? `${((combo.wins / total) * 100).toFixed(2)}%` : "N/A";
-//     });
-//     // Sort by most bots, then count desc
-//     return Object.values(combos).sort((a, b) => b.label.split(" + ").length - a.label.split(" + ").length || b.count - a.count);
-// };
-// const fhgCorrelations = calculateFHGCorrelations();
 
 // --- Mythos Dataset FHG % Card ---
 useEffect(() => {
@@ -532,6 +368,13 @@ const calculateFHGBefore30Matrix = () => {
         mythosLookup.set(key, row);
     });
 
+    // Debug logging
+    console.log('Debug - Mythos Dataset Info:');
+    console.log('- Mythos data length:', mythosData.length);
+    console.log('- Filtered data length:', filteredData.length);
+    console.log('- Sample Mythos keys:', Array.from(mythosLookup.keys()).slice(0, 5));
+    console.log('- Sample filtered data keys:', filteredData.slice(0, 5).map(row => `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`));
+
     // Matrix buckets for before 30 analysis
     const matrixBuckets = [
         {
@@ -574,16 +417,20 @@ const calculateFHGBefore30Matrix = () => {
         let wins = 0;
         let losses = 0;
         let disregarded = 0;
+        let matchedCount = 0;
+        let notFoundCount = 0;
 
         plays.forEach(row => {
             const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
             const mythosRow = mythosLookup.get(key);
             
             if (!mythosRow) {
+                notFoundCount++;
                 disregarded++;
                 return;
             }
 
+            matchedCount++;
             const firstGoalTime = mythosRow["First Goal Time"];
             const homeHT = Number(mythosRow["Home HT Score"] || 0);
             const awayHT = Number(mythosRow["Away HT Score"] || 0);
@@ -594,9 +441,15 @@ const calculateFHGBefore30Matrix = () => {
                 return;
             }
             
-            // If no first goal time but HT score >= 1, disregard
-            if ((firstGoalTime === "" || firstGoalTime == null) && (homeHT + awayHT) >= 1) {
-                disregarded++;
+            // Handle blank First Goal Time
+            if (firstGoalTime === "" || firstGoalTime == null) {
+                // If both HT scores are 0, it's a loss (no goals scored)
+                if ((homeHT + awayHT) === 0) {
+                    losses++;
+                } else {
+                    // If HT scores show goals but no timing data, disregard
+                    disregarded++;
+                }
                 return;
             }
 
@@ -604,13 +457,28 @@ const calculateFHGBefore30Matrix = () => {
             if (firstGoalTime >= 0 && firstGoalTime <= 31) {
                 wins++;
             }
-            // Loss conditions: HT Score = 0 OR First Goal Time > 31
-            else if ((homeHT + awayHT) === 0 || firstGoalTime > 31) {
+            // Loss conditions: First Goal Time > 31
+            else if (firstGoalTime > 31) {
                 losses++;
             } else {
                 disregarded++;
             }
         });
+
+        // Debug logging for first bucket
+        if (bucket.label === "All Three Agree") {
+            console.log(`Debug - ${bucket.label}:`, {
+                totalPlays: plays.length,
+                matchedCount,
+                notFoundCount,
+                wins,
+                losses,
+                disregarded,
+                sampleNotFoundKeys: plays.filter(row => !mythosLookup.get(`${row.Date}_${row["Home Team"]}_${row["Away Team"]}`))
+                    .slice(0, 3)
+                    .map(row => `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`)
+            });
+        }
 
         const totalValidPlays = wins + losses;
         const winPercentage = totalValidPlays > 0 ? ((wins / totalValidPlays) * 100).toFixed(2) : "N/A";
@@ -887,7 +755,16 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
         
         // Disregard conditions
         if (firstGoalTime === -1 || firstGoalTime === "-") return;
-        if ((firstGoalTime === "" || firstGoalTime == null) && (homeHT + awayHT) >= 1) return;
+        
+        // Handle blank First Goal Time
+        if (firstGoalTime === "" || firstGoalTime == null) {
+          // If both HT scores are 0, count as valid game (loss)
+          if ((homeHT + awayHT) === 0) {
+            validGames++;
+          }
+          // If HT scores show goals but no timing data, disregard (don't count)
+          return;
+        }
         
         validGames++;
       });
@@ -916,7 +793,17 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
         
         // Disregard conditions
         if (firstGoalTime === -1 || firstGoalTime === "-") return;
-        if ((firstGoalTime === "" || firstGoalTime == null) && (homeHT + awayHT) >= 1) return;
+        
+        // Handle blank First Goal Time
+        if (firstGoalTime === "" || firstGoalTime == null) {
+          // If both HT scores are 0, count as valid game (loss)
+          if ((homeHT + awayHT) === 0) {
+            validGames++;
+            // This is a loss, so don't increment wins
+          }
+          // If HT scores show goals but no timing data, disregard (don't count)
+          return;
+        }
         
         validGames++;
         
