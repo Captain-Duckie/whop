@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+// Remove unused imports
+// import { useParams, useRouter } from "next/navigation";
 
 // ✅ Move type definition **above** Dashboard()
 type SoccerData = {
@@ -12,9 +13,10 @@ type SoccerData = {
 };
 
 export default function Landing() {
-    const params = useParams();
-    const router = useRouter();
-    const experienceId = params.experienceId as string;
+    // Remove unused variables
+    // const params = useParams();
+    // const router = useRouter();
+    // const experienceId = params.experienceId as string;
     
     const [data, setData] = useState<SoccerData[]>([]);
     const [horizonData, setHorizonData] = useState<SoccerData[]>([]);
@@ -110,7 +112,7 @@ export default function Landing() {
         
         const homeFT = Number(mythosRow["Home FT Score"] || 0);
         const awayFT = Number(mythosRow["Away FT Score"] || 0);
-        let doubleChance = (row["Double Chance"] || "").toString().trim();
+        const doubleChance = (row["Double Chance"] || "").toString().trim();
         let odds = Number(row["Double Chance Odds"] || 1);
         let betType = doubleChance;
         
