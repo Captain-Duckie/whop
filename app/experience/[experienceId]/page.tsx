@@ -267,14 +267,12 @@ export default function Landing() {
                 
                 {/* Navigation Button */}
                 <div className="mt-12">
-                    <button
+                    <button 
                         onClick={() => router.push(`/experience/${experienceId}/dashboard`)}
-                        className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl text-white font-bold text-lg shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105"
-                      >
+                        className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl text-white font-bold text-lg shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105">
                         <span className="relative z-10">Go to Dashboard</span>
                         <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                      </button>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
