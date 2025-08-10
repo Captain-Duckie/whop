@@ -16,8 +16,9 @@ export default function Landing() {
     const router = useRouter();
     const experienceId = params.experienceId as string;
     
-    // const [data, setData] = useState<SoccerData[]>([]);
+    const [data, setData] = useState<SoccerData[]>([]);
     const [horizonData, setHorizonData] = useState<SoccerData[]>([]);
+    const [mythosData, setMythosData] = useState<SoccerData[]>([]);
 
     useEffect(() => {
         fetch('/api/data')
@@ -27,19 +28,12 @@ export default function Landing() {
                 console.log("Debug info:", data.debug);
                 console.log("Horizon data length:", data.horizon?.length);
                 console.log("First 3 horizon records:", data.horizon?.slice(0, 3));
-                // setData(data.soccer || []);
+                setData(data.soccer || []);
                 setHorizonData(data.horizon || []);
+                setMythosData(data.mythos || []);
             })
             .catch(console.error);
     }, []);
-
-    // Get yesterday's date in YYYY-MM-DD format
-    // const getYesterday = () => {
-    //     const d = new Date();
-    //     d.setDate(d.getDate() - 1);
-    //     return d.toISOString().split("T")[0];
-    // };
-    // const yesterday = getYesterday();
 
     // Get yesterday's date in MM/DD/YYYY format
     const getYesterdayMMDDYYYY = () => {
@@ -59,191 +53,234 @@ export default function Landing() {
         const fhgStr = (row.FHG || "").toString().trim();
         return dateStr === yesterdayMMDDYYYY && fhgStr.toLowerCase() === "over";
     });
+    
+
     const numPlays = yesterdaysFHGPlays.length;
     const numWins = yesterdaysFHGPlays.filter(row => Number(row["FH Goals"]) >= 1).length;
     const winPct = numPlays > 0 ? ((numWins / numPlays) * 100).toFixed(1) : "0.0";
+    
+    // FHG Profit calculation (assuming 1.67 odds: +0.67u win, -1u loss)
+    const fhgLosses = numPlays - numWins;
+    const fhgTotalProfit = (numWins * 0.67) - (fhgLosses * 1);
+    const fhgROI = numPlays > 0 ? ((fhgTotalProfit / numPlays) * 100).toFixed(1) : "0.0";
 
-    // Filter for yesterday's FTC plays (robust date and value matching)
-    const yesterdaysFTCPlays = horizonData.filter(row => {
+    // Double Chance calculations with filtering rules:
+    // - Exclude "Away / Draw" entirely
+    // - For "Home / Away", require odds >= 1.2
+    // - For "Home / Draw", include all (will swap to Home ML if < 1.18 later)
+    const yesterdaysDoubleChancePlays = data.filter(row => {
         const dateStr = (row.Date || "").toString().trim();
-        const ftcStr = (row.FTC || "").toString().trim().toLowerCase();
-        return dateStr === yesterdayMMDDYYYY && (ftcStr === "over" || ftcStr === "under");
-    });
-    const ftcOverPlays = yesterdaysFTCPlays.filter(row => (row.FTC || "").toString().trim().toLowerCase() === "over");
-    const ftcUnderPlays = yesterdaysFTCPlays.filter(row => (row.FTC || "").toString().trim().toLowerCase() === "under");
-    const overPlays = ftcOverPlays.length;
-    const underPlays = ftcUnderPlays.length;
-
-    let overWins = 0, overLosses = 0, overProfit = 0;
-    ftcOverPlays.forEach(row => {
-        const corners = Number(row["FT Corners"]);
-        const line = Number(row["Pregame Corner Line"]);
-        const odds = Number(row["Over Corner Odds"]) || 1.9;
-        if (corners > line) {
-            overWins++;
-            overProfit += (odds - 1);
-        } else if (corners < line) {
-            overLosses++;
-            overProfit -= 1;
+        const doubleChance = (row["Double Chance"] || "").toString().trim();
+        const odds = Number(row["Double Chance Odds"] || 0);
+        
+        // Must be yesterday's date with valid Double Chance
+        if (dateStr !== yesterdayMMDDYYYY || !doubleChance || doubleChance === "") {
+            return false;
         }
-        // Pushes are dropped from reporting
-    });
-    // const overWinPct = overPlays > 0 ? ((overWins / overPlays) * 100).toFixed(1) : "0.0";
-
-    let underWins = 0, underLosses = 0, underProfit = 0;
-    ftcUnderPlays.forEach(row => {
-        const corners = Number(row["FT Corners"]);
-        const line = Number(row["Pregame Corner Line"]);
-        const odds = Number(row["Under Corner Odds"]) || 1.9;
-        if (corners < line) {
-            underWins++;
-            underProfit += (odds - 1);
-        } else if (corners > line) {
-            underLosses++;
-            underProfit -= 1;
+        
+        // Exclude "Away / Draw" entirely
+        if (doubleChance === "Away / Draw") {
+            return false;
         }
-        // Pushes are dropped from reporting
+        
+        // For "Home / Away", require odds >= 1.2
+        if (doubleChance === "Home / Away" && odds < 1.2) {
+            return false;
+        }
+        
+        // For "Home / Draw", include all (we'll handle swapping to Home ML later)
+        return true;
     });
-    // const underWinPct = underPlays > 0 ? ((underWins / underPlays) * 100).toFixed(1) : "0.0";
 
-    // Full Time Goals (Asian Totals)
-    const yesterdaysFTGPlays = horizonData.filter(row => {
-        const dateStr = (row.Date || "").toString().trim();
-        const ftgStr = (row.FTG || "").toString().trim().toLowerCase();
-        return dateStr === yesterdayMMDDYYYY && (ftgStr === "over" || ftgStr === "under") && row.League !== "Argentine Division 2";
+    // Create lookup map for mythos data to get final scores
+    const mythosLookup = new Map();
+    mythosData.forEach(row => {
+        const key = `${row.Date}_${row.League}_${row["Home Team"]}`;
+        mythosLookup.set(key, row);
     });
-    const ftgOverPlays = yesterdaysFTGPlays.filter(row => (row.FTG || "").toString().trim().toLowerCase() === "over");
-    const ftgUnderPlays = yesterdaysFTGPlays.filter(row => (row.FTG || "").toString().trim().toLowerCase() === "under");
 
-    // Asian Total evaluation logic for FTG
-    function evaluateAsianResult(direction: "Over" | "Under", ftGoals: number, line: number): "Win" | "Loss" | "Win/Push" | "Loss/Push" | "Push" {
-        const mod = line % 1;
-        if (mod === 0.25 || mod === 0.75) {
-            const lower = line - 0.25;
-            const upper = line + 0.25;
-            if (direction === "Over") {
-                if (ftGoals > upper) return "Win";
-                if (ftGoals === upper) return "Win/Push";
-                if (ftGoals === lower) return "Loss/Push";
-                return "Loss";
-            } else {
-                if (ftGoals < lower) return "Win";
-                if (ftGoals === lower) return "Win/Push";
-                if (ftGoals === upper) return "Loss/Push";
-                return "Loss";
+    let dcWins = 0;
+    let dcTotalProfit = 0;
+
+    yesterdaysDoubleChancePlays.forEach(row => {
+        const key = `${row.Date}_${row.League}_${row["Home Team"]}`;
+        const mythosRow = mythosLookup.get(key);
+        
+        if (!mythosRow) return; // Skip if no match found
+        
+        const homeFT = Number(mythosRow["Home FT Score"] || 0);
+        const awayFT = Number(mythosRow["Away FT Score"] || 0);
+        let doubleChance = (row["Double Chance"] || "").toString().trim();
+        let odds = Number(row["Double Chance Odds"] || 1);
+        let betType = doubleChance;
+        
+        // If Home / Draw with odds < 1.18, swap to Home ML
+        if (doubleChance === "Home / Draw" && odds < 1.18) {
+            const homeMLOdds = Number(mythosRow["Home ML"] || 0);
+            if (homeMLOdds > 0) {
+                odds = homeMLOdds;
+                betType = "Home ML";
+                //console.log(`Swapped to Home ML: odds changed from ${row["Double Chance Odds"]} to ${homeMLOdds}`);
             }
+        }
+        
+        //console.log(`Match: ${row["Home Team"]} vs ${row["Away Team"]}, Original DC: ${doubleChance}, Bet Type: ${betType}, Odds: ${odds}, Scores: ${homeFT}-${awayFT}`);
+        
+        let isWin = false;
+        
+        if (betType === "Home ML") {
+            isWin = homeFT > awayFT;
+        } else if (doubleChance === "Home / Draw") {
+            isWin = homeFT >= awayFT;
+        } else if (doubleChance === "Home / Away") {
+            isWin = homeFT !== awayFT;
+        } else if (doubleChance === "Away / Draw") {
+            isWin = awayFT >= homeFT;
+        }
+        
+        //console.log(`Result: ${isWin ? 'WIN' : 'LOSS'}`);
+        
+        if (isWin) {
+            dcWins++;
+            dcTotalProfit += (odds - 1);
         } else {
-            if (direction === "Over") {
-                if (ftGoals > line) return "Win";
-                if (ftGoals === line) return "Push";
-                return "Loss";
-            } else {
-                if (ftGoals < line) return "Win";
-                if (ftGoals === line) return "Push";
-                return "Loss";
-            }
+            dcTotalProfit -= 1;
         }
-    }
-
-    // Over stats (Asian Totals)
-    let ftgOverWins = 0, ftgOverLosses = 0, ftgOverWinPush = 0, ftgOverLossPush = 0, ftgOverProfit = 0;
-    ftgOverPlays.forEach(row => {
-        const ftGoals = Number(row["FT Goals"]);
-        const line = Number(row["Pregame Line"]);
-        const odds = Number(row["Over Goal Odds"]) || 1.9;
-        const result = evaluateAsianResult("Over", ftGoals, line);
-        if (result === "Win") {
-            ftgOverWins++;
-            ftgOverProfit += (odds - 1);
-        } else if (result === "Win/Push") {
-            ftgOverWinPush++;
-            ftgOverProfit += (odds - 1) / 2;
-        } else if (result === "Loss/Push") {
-            ftgOverLossPush++;
-            ftgOverProfit -= 0.5;
-        } else if (result === "Loss") {
-            ftgOverLosses++;
-            ftgOverProfit -= 1;
-        }
-        // Pushes are dropped from reporting
     });
-    const ftgOverCount = ftgOverPlays.length;
-    // const ftgOverWinPct = ftgOverCount > 0 ? ((ftgOverWins / ftgOverCount) * 100).toFixed(1) : "0.0";
 
-    // Under stats (Asian Totals)
-    let ftgUnderWins = 0, ftgUnderLosses = 0, ftgUnderWinPush = 0, ftgUnderLossPush = 0, ftgUnderProfit = 0;
-    ftgUnderPlays.forEach(row => {
-        const ftGoals = Number(row["FT Goals"]);
-        const line = Number(row["Pregame Line"]);
-        const odds = Number(row["Under Goal Odds"]) || 1.9;
-        const result = evaluateAsianResult("Under", ftGoals, line);
-        if (result === "Win") {
-            ftgUnderWins++;
-            ftgUnderProfit += (odds - 1);
-        } else if (result === "Win/Push") {
-            ftgUnderWinPush++;
-            ftgUnderProfit += (odds - 1) / 2;
-        } else if (result === "Loss/Push") {
-            ftgUnderLossPush++;
-            ftgUnderProfit -= 0.5;
-        } else if (result === "Loss") {
-            ftgUnderLosses++;
-            ftgUnderProfit -= 1;
-        }
-        // Pushes are dropped from reporting
-    });
-    const ftgUnderCount = ftgUnderPlays.length;
-    // const ftgUnderWinPct = ftgUnderCount > 0 ? ((ftgUnderWins / ftgUnderCount) * 100).toFixed(1) : "0.0";
+    const dcPlays = yesterdaysDoubleChancePlays.length;
+    const dcWinPct = dcPlays > 0 ? ((dcWins / dcPlays) * 100).toFixed(1) : "0.0";
+    const dcROI = dcPlays > 0 ? ((dcTotalProfit / dcPlays) * 100).toFixed(1) : "0.0";
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
-            <h1 className="text-4xl font-bold mb-6">Welcome to Stellariea Sports!</h1>
-            <p className="mb-8 text-lg">Yesterday&apos;s Results</p>
-            
-            <div className="w-full max-w-md mb-8">
-                <div className="bg-gray-800 rounded shadow p-6 flex flex-col items-center">
-                    <h2 className="text-xl font-semibold mb-2">First Half Goals (FHG)</h2>
-                    <p className="text-lg">Plays: <span className="font-bold">{numPlays}</span></p>
-                    <p className="text-lg">Wins: <span className="font-bold">{numWins}</span></p>
-                    <p className="text-lg"><span className="font-bold">{winPct}% Win Rate</span></p>
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
+            {/* Header Section */}
+            <div className="flex flex-col items-center justify-center pt-16 pb-8">
+                <div className="mb-6 p-6 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 shadow-2xl">
+                    <div className="text-4xl">⚽</div>
                 </div>
-            </div>
-            <div className="w-full max-w-md mb-8">
-                <div className="bg-gray-800 rounded shadow p-6 flex flex-col items-center">
-                    <h2 className="text-xl font-semibold mb-4 text-center">Full Time Corners (FTC): <span className="font-bold">{(overProfit + underProfit).toFixed(2)}</span></h2>
-                    <div className="w-full flex flex-col gap-4 items-center">
-                        <div className="mb-2 text-center">
-                            <span className="font-semibold">Overs:</span> {overWins} W / {overLosses} L<br />
-                            <span className="font-bold">{overProfit.toFixed(2)}U profit @ {overPlays > 0 ? ((overProfit / overPlays) * 100).toFixed(1) : "0"}% ROI</span>
+                <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-teal-400 via-cyan-400 to-slate-300 bg-clip-text text-transparent">
+                    Welcome to Velorium!
+                </h1>
+                <p className="text-xl text-gray-300 mb-8">Yesterday&apos;s Performance Dashboard</p>
+                
+                {/* Stats Overview Cards */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-4xl px-6">
+                    {/* First Half Goals Card */}
+                    <div className="group hover:scale-105 transition-all duration-300">
+                        <div className="bg-gradient-to-br from-green-800/80 to-emerald-900/80 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-green-500/20 hover:border-green-400/40">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-bold text-green-100">First Half Goals</h2>
+                                <div className="text-3xl bg-green-500/20 p-3 rounded-full">🥅</div>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-green-200">Total Plays</span>
+                                    <span className="text-2xl font-bold text-white">{numPlays}</span>
+                                </div>
+                                
+                                <div className="flex justify-between items-center">
+                                    <span className="text-green-200">Wins</span>
+                                    <span className="text-2xl font-bold text-green-400">{numWins}</span>
+                                </div>
+                                
+                                <div className="bg-green-900/30 rounded-lg p-4">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-green-300">Win Rate</span>
+                                        <span className="text-xl font-bold text-green-400">{winPct}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-700 rounded-full h-2">
+                                        <div 
+                                            className="bg-gradient-to-r from-green-500 to-green-400 h-2 rounded-full transition-all duration-500"
+                                            style={{width: `${Math.min(parseFloat(winPct), 100)}%`}}
+                                        ></div>
+                                    </div>
+                                </div>
+                                
+                                <div className="border-t border-green-500/20 pt-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-green-200">Profit</span>
+                                        <span className={`text-xl font-bold ${fhgTotalProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            {fhgTotalProfit >= 0 ? '+' : ''}{fhgTotalProfit.toFixed(2)}U
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-2">
+                                        <span className="text-green-200">ROI</span>
+                                        <span className={`text-lg font-semibold ${parseFloat(fhgROI) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            {parseFloat(fhgROI) >= 0 ? '+' : ''}{fhgROI}%
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="text-center">
-                            <span className="font-semibold">Unders:</span> {underWins} W / {underLosses} L<br />
-                            <span className="font-bold">{underProfit.toFixed(2)}U profit @ {underPlays > 0 ? ((underProfit / underPlays) * 100).toFixed(1) : "0"}% ROI</span>
+                    </div>
+
+                    {/* Double Chance Card */}
+                    <div className="group hover:scale-105 transition-all duration-300">
+                        <div className="bg-gradient-to-br from-blue-800/80 to-indigo-900/80 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-blue-500/20 hover:border-blue-400/40">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-bold text-blue-100">Double Chance & Moneylines</h2>
+                                <div className="text-3xl bg-blue-500/20 p-3 rounded-full">🎯</div>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-blue-200">Total Plays</span>
+                                    <span className="text-2xl font-bold text-white">{dcPlays}</span>
+                                </div>
+                                
+                                <div className="flex justify-between items-center">
+                                    <span className="text-blue-200">Wins</span>
+                                    <span className="text-2xl font-bold text-blue-400">{dcWins}</span>
+                                </div>
+                                
+                                <div className="bg-blue-900/30 rounded-lg p-4">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-blue-300">Win Rate</span>
+                                        <span className="text-xl font-bold text-blue-400">{dcWinPct}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-700 rounded-full h-2">
+                                        <div 
+                                            className="bg-gradient-to-r from-blue-500 to-blue-400 h-2 rounded-full transition-all duration-500"
+                                            style={{width: `${Math.min(parseFloat(dcWinPct), 100)}%`}}
+                                        ></div>
+                                    </div>
+                                </div>
+                                
+                                <div className="border-t border-blue-500/20 pt-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-blue-200">Profit</span>
+                                        <span className={`text-xl font-bold ${dcTotalProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            {dcTotalProfit >= 0 ? '+' : ''}{dcTotalProfit.toFixed(2)}U
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-2">
+                                        <span className="text-blue-200">ROI</span>
+                                        <span className={`text-lg font-semibold ${parseFloat(dcROI) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            {parseFloat(dcROI) >= 0 ? '+' : ''}{dcROI}%
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div className="w-full max-w-md mb-8">
-                <div className="bg-gray-800 rounded shadow p-6 flex flex-col items-center">
-                    <h2 className="text-xl font-semibold mb-4 text-center">Full Time Goals (FTG, Asian Totals): <span className="font-bold">{(ftgOverProfit + ftgUnderProfit).toFixed(2)}</span></h2>
-                    <div className="w-full flex flex-col gap-4 items-center">
-                        <div className="mb-2 text-center">
-                            <span className="font-semibold">Overs:</span> {ftgOverWins} W / {ftgOverWinPush} WP / {ftgOverLossPush} LP / {ftgOverLosses} L<br />
-                            <span className="font-bold">{ftgOverProfit.toFixed(2)}U profit @ {ftgOverCount > 0 ? ((ftgOverProfit / ftgOverCount) * 100).toFixed(1) : "0"}% ROI</span>
-                        </div>
-                        <div className="text-center">
-                            <span className="font-semibold">Unders:</span> {ftgUnderWins} W / {ftgUnderWinPush} WP / {ftgUnderLossPush} LP / {ftgUnderLosses} L<br />
-                            <span className="font-bold">{ftgUnderProfit.toFixed(2)}U profit @ {ftgUnderCount > 0 ? ((ftgUnderProfit / ftgUnderCount) * 100).toFixed(1) : "0"}% ROI</span>
-                        </div>
-                    </div>
+                
+                {/* Navigation Button */}
+                <div className="mt-12">
+                    <a href="/dashboard">
+                        <button className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl text-white font-bold text-lg shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105">
+                            <span className="relative z-10">Go to Dashboard</span>
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                        </button>
+                    </a>
                 </div>
             </div>
-            <button 
-                onClick={() => router.push(`/experience/${experienceId}/dashboard`)}
-                className="mt-8 px-6 py-3 bg-blue-600 rounded text-white font-semibold hover:bg-blue-700 transition"
-            >
-                Go to Dashboard
-            </button>
         </div>
     );
 }
+
+// npm run dev to start
+// kill-port 3000 to kill
+
