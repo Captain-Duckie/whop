@@ -447,7 +447,7 @@ horizonFTGFiltered.forEach(row => {
 function calculateHorizonFTGProfit() {
     let overProfit = 0;
     let underProfit = 0;
-    // Remove unused debugCount variable
+
     
     horizonFTGFiltered.forEach(row => {
         const ftGoals = Number(row["FT Goals"] || 0);
