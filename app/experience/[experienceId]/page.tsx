@@ -249,7 +249,6 @@ export default function Landing() {
                                         ></div>
                                     </div>
                                 </div>
-                                
                                 <div className="border-t border-blue-500/20 pt-4">
                                     <div className="flex justify-between items-center">
                                         <span className="text-blue-200">Profit</span>
@@ -270,13 +269,12 @@ export default function Landing() {
                 </div>
                 
                 {/* Navigation Button */}
-                 </div>
-                      <button 
-                          onClick={() => router.push(`/experience/${experienceId}/dashboard`)}
-                          className="mt-8 px-6 py-3 bg-blue-600 rounded text-white font-semibold hover:bg-blue-700 transition">
-                          Go to Dashboard
-                      </button>
-                  </div>
+                <div className="mt-12">
+                    <a href="/dashboard">
+                        <button className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl text-white font-bold text-lg shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105">
+                            <span className="relative z-10">Go to Dashboard</span>
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                        </button>
                     </a>
                 </div>
             </div>
