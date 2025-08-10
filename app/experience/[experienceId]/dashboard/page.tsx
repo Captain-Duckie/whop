@@ -447,7 +447,7 @@ horizonFTGFiltered.forEach(row => {
 function calculateHorizonFTGProfit() {
     let overProfit = 0;
     let underProfit = 0;
-    let debugCount = 0;
+    // Remove unused debugCount variable
     
     horizonFTGFiltered.forEach(row => {
         const ftGoals = Number(row["FT Goals"] || 0);
@@ -589,7 +589,7 @@ const calculateDoubleChanceStats = () => {
         
         const homeFT = Number(mythosRow["Home FT Score"] || 0);
         const awayFT = Number(mythosRow["Away FT Score"] || 0);
-        let doubleChance = (row["Double Chance"] || "").toString().trim();
+        const doubleChance = (row["Double Chance"] || "").toString().trim();
         let odds = Number(row["Double Chance Odds"] || 1);
         let betType = doubleChance;
         
@@ -723,8 +723,9 @@ const calculateFHGBefore30Matrix = () => {
         let wins = 0;
         let losses = 0;
         let disregarded = 0;
-        let matchedCount = 0;
-        let notFoundCount = 0;
+        // Remove unused variables
+        // let matchedCount = 0;
+        // let notFoundCount = 0;
         let totalProfit = 0;
 
         plays.forEach(row => {
@@ -733,12 +734,12 @@ const calculateFHGBefore30Matrix = () => {
             const horizonRow = horizonLookup.get(key);
             
             if (!mythosRow) {
-                notFoundCount++;
+                // notFoundCount++; // Removed unused variable
                 disregarded++;
                 return;
             }
 
-            matchedCount++;
+            // matchedCount++; // Removed unused variable
             const firstGoalTime = mythosRow["First Goal Time"];
             const homeHT = Number(mythosRow["Home HT Score"] || 0);
             const awayHT = Number(mythosRow["Away HT Score"] || 0);
@@ -1622,7 +1623,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
             </div>
             <p className="text-gray-300 text-center mb-8 max-w-4xl mx-auto leading-relaxed">
               This matrix analyzes different combinations of bot signals for first half goals and their corresponding win rates. 
-              Each combination shows how often at least one goal is scored in the first half when specific bots predict "Over" for FHG. 
+              Each combination shows how often at least one goal is scored in the first half when specific bots predict &quot;Over&quot; for FHG. 
               Results help identify which bot combinations are most reliable for first half goal predictions.
             </p>
 
