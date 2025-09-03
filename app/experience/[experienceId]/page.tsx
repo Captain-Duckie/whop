@@ -58,10 +58,40 @@ export default function Landing() {
     const numWins = yesterdaysFHGPlays.filter(row => Number(row["FH Goals"]) >= 1).length;
     const winPct = numPlays > 0 ? ((numWins / numPlays) * 100).toFixed(1) : "0.0";
     
-    // FHG Profit calculation (assuming 1.67 odds: +0.67u win, -1u loss)
+    // FHG Matrix Odds dictionary based on Pregame Goal Line
+    const getFHGMatrixOdds = (pregameGoalLine: number): number => {
+        if (pregameGoalLine >= 3.25) return 1.44;
+        if (pregameGoalLine === 3.0) return 1.5;
+        if (pregameGoalLine === 2.75) return 1.5;
+        if (pregameGoalLine === 2.5) return 1.55;
+        if (pregameGoalLine === 2.25) return 1.65;
+        if (pregameGoalLine === 2.0) return 1.7;
+        if (pregameGoalLine <= 1.75) return 1.9;
+        return 1.7; // Default fallback
+    };
+
+    // Calculate profit using dynamic odds based on Pregame Goal Line
     const fhgLosses = numPlays - numWins;
-    const fhgTotalProfit = (numWins * 0.67) - (fhgLosses * 1);
-    const fhgROI = numPlays > 0 ? ((fhgTotalProfit / numPlays) * 100).toFixed(1) : "0.0";
+    let fhgTotalProfit = 0;
+
+    horizonData.forEach(row => {
+        const dateStr = (row.Date || "").toString().trim();
+        if (dateStr !== yesterdayMMDDYYYY) return; // Skip rows not from yesterday
+
+        const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
+        const horizonRow = horizonData.find(horizon => `${horizon.Date}_${horizon["Home Team"]}_${horizon["Away Team"]}` === key);
+        const pregameGoalLine = horizonRow ? Number(horizonRow["Pregame Line"] || 2.5) : 2.5;
+        const fhgOdds = getFHGMatrixOdds(pregameGoalLine);
+        const profitOnWin = fhgOdds - 1;
+        const fhGoals = Number(row["FH Goals"]);
+        if (fhGoals >= 1) {
+            fhgTotalProfit += profitOnWin; // Win
+        } else {
+            fhgTotalProfit -= 1; // Loss
+        }
+    });
+
+    const fhgROI = numPlays > 0 ? ((fhgTotalProfit / numPlays)).toFixed(1) : "0.0";
 
     // Double Chance calculations with filtering rules:
     // - Exclude "Away / Draw" entirely
