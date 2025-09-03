@@ -71,7 +71,6 @@ export default function Landing() {
     };
 
     // Calculate profit using dynamic odds based on Pregame Goal Line
-    const fhgLosses = numPlays - numWins;
     let fhgTotalProfit = 0;
 
     horizonData.forEach(row => {
