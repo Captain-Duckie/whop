@@ -33,8 +33,6 @@ type MatrixStatsResult = {
   losses: number;
   disregarded: number;
   winPercentage: string;
-  profit: string;
-  roi: string;
 };
 
 export default function SearchResults() {
@@ -55,6 +53,8 @@ export default function SearchResults() {
     const [horizonData, setHorizonData] = useState<SoccerData[]>([]);
     const [mythosData, setMythosData] = useState<SoccerData[]>([]);
     const [activeTab, setActiveTab] = useState("overview");
+    const [earliestTime, setEarliestTime] = useState(0);
+    const [latestTime, setLatestTime] = useState(30);
 
     const clearFilters = () => {
         setSelectedLeague(""); // Reset league selection 
@@ -652,7 +652,7 @@ const calculateDoubleChanceStats = () => {
 
 const doubleChanceStats = calculateDoubleChanceStats();
 
-// --- FHG Correlation Matrix for Goals Before 30th Minute (using Mythos Dataset) ---
+// --- Correlation Matrix for Goals Before X Minute (using Mythos Dataset) ---
 const calculateFHGBefore30Matrix = () => {
     // Create a key-based lookup for Mythos data
     const mythosLookup = new Map();
@@ -661,27 +661,6 @@ const calculateFHGBefore30Matrix = () => {
         mythosLookup.set(key, row);
     });
 
-    // Create a key-based lookup for Horizon data to get Pregame Goal Line
-    const horizonLookup = new Map();
-    horizonData.forEach(row => {
-        const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
-        horizonLookup.set(key, row);
-    });
-
-    // B30 Odds dictionary based on Pregame Goal Line
-    const getB30Odds = (pregameGoalLine: number): number => {
-        if (pregameGoalLine >= 3.25) return 1.55;
-        if (pregameGoalLine === 3.0) return 1.63;
-        if (pregameGoalLine === 2.75) return 1.72;
-        if (pregameGoalLine === 2.5) return 1.9;
-        if (pregameGoalLine === 2.25) return 2.0;
-        if (pregameGoalLine === 2.0) return 2.25;
-        if (pregameGoalLine === 1.75) return 2.6;
-        if (pregameGoalLine <= 1.5) return 2.8;
-        return 1.9; // Default fallback
-    };
-
-    // Matrix buckets for before 30 analysis
     const matrixBuckets = [
         {
             label: "SuperNova Only",
@@ -723,31 +702,19 @@ const calculateFHGBefore30Matrix = () => {
         let wins = 0;
         let losses = 0;
         let disregarded = 0;
-        // Remove unused variables
-        // let matchedCount = 0;
-        // let notFoundCount = 0;
-        let totalProfit = 0;
 
         plays.forEach(row => {
             const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
             const mythosRow = mythosLookup.get(key);
-            const horizonRow = horizonLookup.get(key);
             
             if (!mythosRow) {
-                // notFoundCount++; // Removed unused variable
                 disregarded++;
                 return;
             }
 
-            // matchedCount++; // Removed unused variable
             const firstGoalTime = mythosRow["First Goal Time"];
             const homeHT = Number(mythosRow["Home HT Score"] || 0);
             const awayHT = Number(mythosRow["Away HT Score"] || 0);
-            
-            // Get the appropriate B30 odds based on Pregame Goal Line
-            const pregameGoalLine = horizonRow ? Number(horizonRow["Pregame Line"] || 2.5) : 2.5;
-            const b30Odds = getB30Odds(pregameGoalLine);
-            const profitOnWin = b30Odds - 1;
             
             // Disregard conditions
             if (firstGoalTime === -1 || firstGoalTime === "-") {
@@ -760,7 +727,6 @@ const calculateFHGBefore30Matrix = () => {
                 // If both HT scores are 0, it's a loss (no goals scored)
                 if ((homeHT + awayHT) === 0) {
                     losses++;
-                    totalProfit -= 1; // Loss
                 } else {
                     // If HT scores show goals but no timing data, disregard
                     disregarded++;
@@ -768,23 +734,24 @@ const calculateFHGBefore30Matrix = () => {
                 return;
             }
 
-            // Win conditions: First Goal Time 0-31
-            if (firstGoalTime >= 0 && firstGoalTime <= 31) {
-                wins++;
-                totalProfit += profitOnWin; // Win with dynamic odds
-            }
-            // Loss conditions: First Goal Time > 31
-            else if (firstGoalTime > 31) {
-                losses++;
-                totalProfit -= 1; // Loss
-            } else {
+            // Disregard games with first goal before earliestTime
+            if (firstGoalTime < earliestTime) {
                 disregarded++;
+                return;
+            }
+
+            // Win conditions: First Goal Time within range (accounting for API +1)
+            if (firstGoalTime >= earliestTime && firstGoalTime <= latestTime + 1) {
+                wins++;
+            }
+            // Loss conditions: First Goal Time after latestTime
+            else if (firstGoalTime > latestTime + 1) {
+                losses++;
             }
         });
 
         const totalValidPlays = wins + losses;
         const winPercentage = totalValidPlays > 0 ? ((wins / totalValidPlays) * 100).toFixed(1) : "N/A";
-        const roi = totalValidPlays > 0 ? ((totalProfit / totalValidPlays) * 100).toFixed(1) : "0.0";
         
         return {
             label: bucket.label,
@@ -793,9 +760,7 @@ const calculateFHGBefore30Matrix = () => {
             wins,
             losses,
             disregarded,
-            winPercentage,
-            profit: totalProfit.toFixed(1),
-            roi
+            winPercentage
         };
     });
 };
@@ -1916,16 +1881,37 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                   </svg>
                 </div>
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">
-                  First Goal Before 30th Minute Matrix
+                  First Goal Before X Minute Matrix
                 </h2>
               </div>
             </div>
             <p className="text-gray-300 text-center mb-8 max-w-4xl mx-auto leading-relaxed">
-              This matrix analyzes bot signal combinations and their success rate for predicting goals scored within the first 30 minutes of matches. 
-              Games are marked as wins if the first goal occurs 
-              between 0-30 minutes, otherwise it is marked as a loss. If no goal timing data is available, games are not included.
+              This matrix analyzes bot signal combinations and their success rate for predicting goals scored within the defined minutes of matches. 
+              Games are marked as wins if the first goal occurs within the defined time range,
+              otherwise it is marked as a loss. If no goal timing data is available, games are not included.
               <span className="block mt-2 text-amber-300 font-semibold">Filter by league to use this!</span>
             </p>
+
+            <div className="grid grid-cols-2 gap-4 items-center">
+              <div className="flex items-center space-x-4">
+                <label className="text-white">Earliest Time:</label>
+                <input
+                  type="number"
+                  value={earliestTime}
+                  onChange={(e) => setEarliestTime(Number(e.target.value))}
+                  className="px-2 py-1 rounded bg-gray-800 text-white border border-gray-600"
+                />
+              </div>
+              <div className="flex items-center space-x-4">
+                <label className="text-white">Latest Time:</label>
+                <input
+                  type="number"
+                  value={latestTime}
+                  onChange={(e) => setLatestTime(Number(e.target.value))}
+                  className="px-2 py-1 rounded bg-gray-800 text-white border border-gray-600"
+                />
+              </div>
+            </div>
 
             {/* Top Row: Dataset Wide Before 30min % + All Three Agree */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-8 max-w-4xl mx-auto">
@@ -1938,7 +1924,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                       <div className="text-2xl">⏱️</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium text-slate-400">B30 Success Rate</div>
+                      <div className="text-sm font-medium text-slate-400">First Goal Success Rate</div>
                       <div className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
                         {(() => {
                           const mythosLookup = new Map();
@@ -1946,50 +1932,56 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                             const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
                             mythosLookup.set(key, row);
                           });
-                          
+
                           let validGames = 0;
                           let wins = 0;
-                          
+
                           mythosFiltered.forEach(row => {
                             const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
                             const mythosRow = mythosLookup.get(key);
-                            
+
                             if (!mythosRow) return;
-                            
+
                             const firstGoalTime = mythosRow["First Goal Time"];
-                            const homeHT = Number(mythosRow["Home HT Score"] || 0);
-                            const awayHT = Number(mythosRow["Away HT Score"] || 0);
-                            
+                            const homeHT = Number(mythosRow["Home FT Score"] || 0);
+                            const awayHT = Number(mythosRow["Away FT Score"] || 0);
+
                             // Disregard conditions
                             if (firstGoalTime === -1 || firstGoalTime === "-") return;
-                            
+
                             // Handle blank First Goal Time
                             if (firstGoalTime === "" || firstGoalTime == null) {
                               // If both HT scores are 0, count as valid game (loss)
                               if ((homeHT + awayHT) === 0) {
                                 validGames++;
-                                // This is a loss, so don't increment wins
+                                // This is a loss since no goals were scored
                               }
-                              // If HT scores show goals but no timing data, disregard (don't count)
                               return;
                             }
-                            
-                            validGames++;
-                            
-                            // Win conditions: First Goal Time 0-31
-                            if (firstGoalTime >= 0 && firstGoalTime <= 31) {
+
+                            // Win conditions: First Goal Time between earliestTime and latestTime (accounting for API +1)
+                            if (firstGoalTime >= earliestTime && firstGoalTime <= latestTime + 1) {
+                              validGames++;
                               wins++;
                             }
+                            // Loss conditions: First Goal Time outside the range
+                            else if (firstGoalTime > latestTime + 1) {
+                              validGames++;
+                              // This is a loss
+                            } else {
+                              // Goals scored before earliestTime are disregarded
+                              return;
+                            }
                           });
-                          
+
                           return validGames > 0 ? ((wins / validGames) * 100).toFixed(1) : "N/A";
                         })()}%
                       </div>
                     </div>
                   </div>
-                  
-                  <h3 className="text-xl font-bold text-white mb-4">Dataset Wide B30 %</h3>
-                  
+
+                  <h3 className="text-xl font-bold text-white mb-4">Dataset Wide First Goal %</h3>
+
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Total Games</span>
@@ -1997,7 +1989,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Valid Games</span>
-                      <span className="font-semibold text-white">{(() => {
+                      <span className="text-white">{(() => {
                         const mythosLookup = new Map();
                         mythosData.forEach(row => {
                           const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
@@ -2013,8 +2005,8 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                           if (!mythosRow) return;
                           
                           const firstGoalTime = mythosRow["First Goal Time"];
-                          const homeHT = Number(mythosRow["Home HT Score"] || 0);
-                          const awayHT = Number(mythosRow["Away HT Score"] || 0);
+                          const homeHT = Number(mythosRow["Home FT Score"] || 0);
+                          const awayHT = Number(mythosRow["Away FT Score"] || 0);
                           
                           // Disregard conditions
                           if (firstGoalTime === -1 || firstGoalTime === "-") return;
@@ -2025,11 +2017,18 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                             if ((homeHT + awayHT) === 0) {
                               validGames++;
                             }
-                            // If HT scores show goals but no timing data, disregard (don't count)
                             return;
                           }
                           
-                          validGames++;
+                          // Win conditions: First Goal Time between earliestTime and latestTime (accounting for API +1)
+                          if (firstGoalTime >= earliestTime && firstGoalTime <= latestTime + 1) {
+                            validGames++;
+                          }
+                          // Loss conditions: First Goal Time outside the range
+                          else if (firstGoalTime > latestTime + 1) {
+                            validGames++;
+                          }
+                          // Goals scored before earliestTime are disregarded (don't count)
                         });
                         
                         return validGames;
@@ -2038,7 +2037,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                     <div className="h-px bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 my-4"></div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Analysis Type</span>
-                      <span className="font-semibold text-amber-400">Before 30 min Goals</span>
+                      <span className="font-semibold text-amber-400">Goals {earliestTime}-{latestTime} min</span>
                     </div>
                   </div>
                 </div>
@@ -2071,19 +2070,6 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                       <div className="flex justify-between items-center">
                         <span className="text-slate-300">Win/Loss Record</span>
                         <span className="font-semibold text-emerald-400">{combo.wins}W - {combo.losses}L</span>
-                      </div>
-                      <div className="h-px bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 my-4"></div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-300">Net Profit</span>
-                        <span className={`font-bold text-lg ${Number(combo.profit) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {Number(combo.profit) >= 0 ? '+' : ''}{combo.profit}U
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-300">ROI</span>
-                        <span className={`font-bold text-lg ${Number(combo.roi) >= 0 ? 'text-teal-400' : 'text-red-400'}`}>
-                          {combo.roi}%
-                        </span>
                       </div>
 
                     </div>
@@ -2123,19 +2109,6 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                           <span className="text-slate-300">W/L:</span>
                           <span className="font-semibold text-purple-400">{combo.wins}W - {combo.losses}L</span>
                         </div>
-                        <div className="h-px bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 my-2"></div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-300">Profit:</span>
-                          <span className={`font-bold ${Number(combo.profit) >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
-                            {Number(combo.profit) >= 0 ? '+' : ''}{combo.profit}U
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-300">ROI:</span>
-                          <span className={`font-bold ${Number(combo.roi) >= 0 ? 'text-pink-400' : 'text-red-400'}`}>
-                            {combo.roi}%
-                          </span>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -2167,19 +2140,6 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                           <span className="text-slate-300">W/L:</span>
                           <span className="font-semibold text-orange-400">{combo.wins}W - {combo.losses}L</span>
                         </div>
-                        <div className="h-px bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 my-2"></div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-300">Profit:</span>
-                          <span className={`font-bold ${Number(combo.profit) >= 0 ? 'text-orange-400' : 'text-red-400'}`}>
-                            {Number(combo.profit) >= 0 ? '+' : ''}{combo.profit}U
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-300">ROI:</span>
-                          <span className={`font-bold ${Number(combo.roi) >= 0 ? 'text-red-400' : 'text-red-400'}`}>
-                            {combo.roi}%
-                          </span>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -2210,19 +2170,6 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                         <div className="flex justify-between items-center">
                           <span className="text-slate-300">W/L:</span>
                           <span className="font-semibold text-cyan-400">{combo.wins}W - {combo.losses}L</span>
-                        </div>
-                        <div className="h-px bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 my-2"></div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-300">Profit:</span>
-                          <span className={`font-bold ${Number(combo.profit) >= 0 ? 'text-cyan-400' : 'text-red-400'}`}>
-                            {Number(combo.profit) >= 0 ? '+' : ''}{combo.profit}U
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-300">ROI:</span>
-                          <span className={`font-bold ${Number(combo.roi) >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                            {combo.roi}%
-                          </span>
                         </div>
                       </div>
                     </div>
@@ -2259,19 +2206,6 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                           <span className="text-slate-300">W/L:</span>
                           <span className="font-semibold text-indigo-400">{combo.wins}W - {combo.losses}L</span>
                         </div>
-                        <div className="h-px bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 my-2"></div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-300">Profit:</span>
-                          <span className={`font-bold ${Number(combo.profit) >= 0 ? 'text-indigo-400' : 'text-red-400'}`}>
-                            {Number(combo.profit) >= 0 ? '+' : ''}{combo.profit}U
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-300">ROI:</span>
-                          <span className={`font-bold ${Number(combo.roi) >= 0 ? 'text-purple-400' : 'text-red-400'}`}>
-                            {combo.roi}%
-                          </span>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -2280,6 +2214,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
             </div>
           </>
         )}
+
 
         {/* Details Tab Content */}
         {activeTab === "details" && (
