@@ -73,24 +73,35 @@ export default function Landing() {
     // Calculate profit using dynamic odds based on Pregame Goal Line
     let fhgTotalProfit = 0;
 
-    horizonData.forEach(row => {
+    const filteredHorizonData = horizonData.filter(row => {
         const dateStr = (row.Date || "").toString().trim();
-        if (dateStr !== yesterdayMMDDYYYY) return; // Skip rows not from yesterday
+        const fhgStr = (row.FHG || "").toString().trim().toLowerCase();
+        return dateStr === yesterdayMMDDYYYY && fhgStr === "over";
+    });
 
+    filteredHorizonData.forEach(row => {
         const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
-        const horizonRow = horizonData.find(horizon => `${horizon.Date}_${horizon["Home Team"]}_${horizon["Away Team"]}` === key);
+        const horizonRow = filteredHorizonData.find(horizon => `${horizon.Date}_${horizon["Home Team"]}_${horizon["Away Team"]}` === key);
         const pregameGoalLine = horizonRow ? Number(horizonRow["Pregame Line"] || 2.5) : 2.5;
         const fhgOdds = getFHGMatrixOdds(pregameGoalLine);
         const profitOnWin = fhgOdds - 1;
         const fhGoals = Number(row["FH Goals"]);
+
+        let result = "LOSS";
+        let profit = -1;
+
         if (fhGoals >= 1) {
+            result = "WIN";
+            profit = profitOnWin;
             fhgTotalProfit += profitOnWin; // Win
         } else {
             fhgTotalProfit -= 1; // Loss
         }
+
+        console.log(`Play Result: ${result}, Profit: ${profit.toFixed(2)}U`);
     });
 
-    const fhgROI = numPlays > 0 ? ((fhgTotalProfit / numPlays)).toFixed(1) : "0.0";
+    const fhgROI = numPlays > 0 ? ((fhgTotalProfit / numPlays) * 100).toFixed(1) : "0.0";
 
     // Double Chance calculations with filtering rules:
     // - Exclude "Away / Draw" entirely
