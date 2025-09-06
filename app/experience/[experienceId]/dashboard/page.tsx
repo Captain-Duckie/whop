@@ -940,7 +940,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                         { id: "double-chance", label: "Double Chance" },
                         { id: "horizon", label: "Horizon Analysis" },
                         { id: "fhg-matrix", label: "FHG Matrix" },
-                        { id: "advanced", label: "B30 Matrix" },
+                        { id: "advanced", label: "First Goal Analysis" },
                         { id: "details", label: "Details" }
                     ].map((tab) => (
                         <button
