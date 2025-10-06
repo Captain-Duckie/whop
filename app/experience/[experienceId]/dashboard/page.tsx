@@ -1325,244 +1325,338 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
           </>
         )}
 
-        {/* Horizon Analysis Tab Content */}
+        {/* B30 Matrix Tab Content */}
         {activeTab === "horizon" && (
           <>
-            <div className="w-full max-w-6xl">
-              {/* Beautiful Section Header */}
-              <div className="flex items-center justify-center mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-xl backdrop-blur-sm border border-orange-300/20">
-                    <svg className="w-6 h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
+            {/* First Half Goals Before 30th Minute Correlation Matrix - Card Format */}
+            <div className="flex items-center justify-center mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl backdrop-blur-sm border border-amber-300/20">
+                  <svg className="w-6 h-6 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">
+                  Horizon Analysis Results
+                </h2>
+              </div>
+            </div>
+            <p className="text-gray-300 text-center mb-8 max-w-4xl mx-auto leading-relaxed">
+              This matrix analyzes bot signal combinations and their success rate for predicting goals scored within the defined minutes of matches. 
+              Games are marked as wins if the first goal occurs within the defined time range,
+              otherwise it is marked as a loss. If no goal timing data is available, games are not included.
+              <span className="block mt-2 text-amber-300 font-semibold">Filter by league to use this!</span>
+            </p>
+
+            <div className="grid grid-cols-2 gap-4 items-center">
+              <div className="flex items-center space-x-4">
+                <label className="text-white">Earliest Time:</label>
+                <input
+                  type="number"
+                  value={earliestTime}
+                  onChange={(e) => setEarliestTime(Number(e.target.value))}
+                  className="px-2 py-1 rounded bg-gray-800 text-white border border-gray-600"
+                />
+              </div>
+              <div className="flex items-center space-x-4">
+                <label className="text-white">Latest Time:</label>
+                <input
+                  type="number"
+                  value={latestTime}
+                  onChange={(e) => setLatestTime(Number(e.target.value))}
+                  className="px-2 py-1 rounded bg-gray-800 text-white border border-gray-600"
+                />
+              </div>
+            </div>
+
+            {/* Side by side cards: Dataset Wide First Goal % (left) and Horizon First Half Goal Plays (right) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-8 max-w-4xl mx-auto">
+              {/* Dataset Wide Before 30min % Card (left) */}
+              <div className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
+                <div className="relative bg-gradient-to-br from-slate-800/90 to-gray-900/90 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-slate-700/20 hover:border-amber-500/30 transition-all duration-300 transform hover:scale-[1.02]">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 shadow-lg">
+                      <div className="text-2xl">⏱️</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-slate-400">First Goal Success Rate</div>
+                      <div className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                        {(() => {
+                          const mythosLookup = new Map();
+                          mythosData.forEach(row => {
+                            const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
+                            mythosLookup.set(key, row);
+                          });
+
+                          let validGames = 0;
+                          let wins = 0;
+
+                          mythosFiltered.forEach(row => {
+                            const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
+                            const mythosRow = mythosLookup.get(key);
+
+                            if (!mythosRow) return;
+
+                            const firstGoalTime = mythosRow["First Goal Time"];
+                            const homeHT = Number(mythosRow["Home FT Score"] || 0);
+                            const awayHT = Number(mythosRow["Away FT Score"] || 0);
+
+                            // Disregard conditions
+                            if (firstGoalTime === -1 || firstGoalTime === "-") return;
+
+                            // Handle blank First Goal Time
+                            if (firstGoalTime === "" || firstGoalTime == null) {
+                              // If both HT scores are 0, count as valid game (loss)
+                              if ((homeHT + awayHT) === 0) {
+                                validGames++;
+                                // This is a loss since no goals were scored
+                              }
+                              return;
+                            }
+
+                            // Win conditions: First Goal Time between earliestTime and latestTime (accounting for API +1)
+                            if (firstGoalTime >= earliestTime && firstGoalTime <= latestTime + 1) {
+                              validGames++;
+                              wins++;
+                            }
+                            // Loss conditions: First Goal Time outside the range
+                            else if (firstGoalTime > latestTime + 1) {
+                              validGames++;
+                              // This is a loss
+                            } else {
+                              // Goals scored before earliestTime are disregarded
+                              return;
+                            }
+                          });
+
+                          return validGames > 0 ? ((wins / validGames) * 100).toFixed(1) : "N/A";
+                        })()}%
+                      </div>
+                    </div>
                   </div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-300 to-yellow-300 bg-clip-text text-transparent">
-                    Horizon Analysis Results
-                  </h2>
+
+                  <h3 className="text-xl font-bold text-white mb-4">Dataset Wide First Goal %</h3>
+
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Total Games</span>
+                      <span className="font-semibold text-white">{mythosFiltered.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Valid Games</span>
+                      <span className="text-white">{(() => {
+                        const mythosLookup = new Map();
+                        mythosData.forEach(row => {
+                          const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
+                          mythosLookup.set(key, row);
+                        });
+                        
+                        let validGames = 0;
+                        
+                        mythosFiltered.forEach(row => {
+                          const key = `${row.Date}_${row["Home Team"]}_${row["Away Team"]}`;
+                          const mythosRow = mythosLookup.get(key);
+                          
+                          if (!mythosRow) return;
+                          
+                          const firstGoalTime = mythosRow["First Goal Time"];
+                          const homeHT = Number(mythosRow["Home FT Score"] || 0);
+                          const awayHT = Number(mythosRow["Away FT Score"] || 0);
+                          
+                          // Disregard conditions
+                          if (firstGoalTime === -1 || firstGoalTime === "-") return;
+                          
+                          // Handle blank First Goal Time
+                          if (firstGoalTime === "" || firstGoalTime == null) {
+                            // If both HT scores are 0, count as valid game (loss)
+                            if ((homeHT + awayHT) === 0) {
+                              validGames++;
+                            }
+                            return;
+                          }
+                          
+                          // Win conditions: First Goal Time between earliestTime and latestTime (accounting for API +1)
+                          if (firstGoalTime >= earliestTime && firstGoalTime <= latestTime + 1) {
+                            validGames++;
+                          }
+                          // Loss conditions: First Goal Time outside the range
+                          else if (firstGoalTime > latestTime + 1) {
+                            validGames++;
+                          }
+                          // Goals scored before earliestTime are disregarded (don't count)
+                        });
+                        
+                        return validGames;
+                      })()}</span>
+                    </div>
+                    <div className="h-px bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 my-4"></div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Analysis Type</span>
+                      <span className="font-semibold text-amber-400">Goals {earliestTime}-{latestTime} min</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <p className="text-gray-300 text-center mb-2 max-w-4xl mx-auto leading-relaxed">Advanced Asian totals & corner betting performance</p>
-              <p className="text-center mb-8 max-w-4xl mx-auto">
-                <span className="text-orange-300 font-semibold">Filter by league to use this!</span>
-              </p>
-              
-              {/* Horizon Dataset FTG/FTC Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* FTG Card (Asian Totals) */}
-                <div className="group relative">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
-                  <div className="relative bg-gradient-to-br from-slate-800/90 to-gray-900/90 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-slate-700/20 hover:border-orange-500/30 transition-all duration-300 transform hover:scale-[1.02]">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="p-3 rounded-full bg-gradient-to-r from-orange-500 to-red-500 shadow-lg">
-                        <div className="text-2xl">🎯</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-slate-400">Asian Totals</div>
-                        <div className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
-                          {horizonFTGPlays}
-                        </div>
-                      </div>
+              {/* Horizon First Half Goal Plays Card (right) */}
+              <div className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
+                <div className="relative bg-gradient-to-br from-slate-800/90 to-gray-900/90 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-slate-700/20 hover:border-emerald-500/30 transition-all duration-300 transform hover:scale-[1.02]">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg">
+                      <div className="text-2xl">🎯</div>
                     </div>
-                    
-                    <h3 className="text-xl font-bold text-white mb-4">Horizon FTG (Asian Total)</h3>
-                    
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-300">Total Games</span>
-                        <span className="font-semibold text-white">{horizonFTGPlays}</span>
-                      </div>
-                      
-                      {/* Over Section */}
-                      <div className="bg-gradient-to-r from-slate-700/30 to-gray-700/30 rounded-lg p-4 border border-slate-600/20">
-                        <h4 className="text-lg font-semibold text-orange-400 mb-3 flex items-center gap-2">
-                          <span>📈</span> Over Bets
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="text-center">
-                            <div className="text-green-400 font-bold">{horizonFTGOverResults.Win}W</div>
-                            <div className="text-slate-400">Full Wins</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-yellow-400 font-bold">{horizonFTGOverResults["Win/Push"]}WP</div>
-                            <div className="text-slate-400">Half Wins</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-orange-400 font-bold">{horizonFTGOverResults["Loss/Push"]}LP</div>
-                            <div className="text-slate-400">Half Loss</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-red-400 font-bold">{horizonFTGOverResults.Loss}L</div>
-                            <div className="text-slate-400">Full Loss</div>
-                          </div>
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-slate-600/30 flex justify-between">
-                          <span className="text-slate-300">Profit:</span>
-                          <span className={`font-bold ${Number(horizonFTGProfits.overProfit) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {Number(horizonFTGProfits.overProfit) >= 0 ? '+' : ''}{horizonFTGProfits.overProfit}U
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-300">ROI:</span>
-                          <span className={`font-bold ${(() => {
-                            const overPlays = horizonFTGOverResults.Win + horizonFTGOverResults["Win/Push"] + horizonFTGOverResults.Push + horizonFTGOverResults["Loss/Push"] + horizonFTGOverResults.Loss;
-                            const roi = overPlays > 0 ? ((Number(horizonFTGProfits.overProfit) / overPlays) * 100) : 0;
-                            return roi >= 0 ? 'text-green-400' : 'text-red-400';
-                          })()}`}>
-                            {(() => {
-                              const overPlays = horizonFTGOverResults.Win + horizonFTGOverResults["Win/Push"] + horizonFTGOverResults.Push + horizonFTGOverResults["Loss/Push"] + horizonFTGOverResults.Loss;
-                              const roi = overPlays > 0 ? ((Number(horizonFTGProfits.overProfit) / overPlays) * 100).toFixed(1) : "0";
-                              return roi;
-                            })()}%
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Under Section */}
-                      <div className="bg-gradient-to-r from-slate-700/30 to-gray-700/30 rounded-lg p-4 border border-slate-600/20">
-                        <h4 className="text-lg font-semibold text-blue-400 mb-3 flex items-center gap-2">
-                          <span>📉</span> Under Bets
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="text-center">
-                            <div className="text-green-400 font-bold">{horizonFTGUnderResults.Win}W</div>
-                            <div className="text-slate-400">Full Wins</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-yellow-400 font-bold">{horizonFTGUnderResults["Win/Push"]}WP</div>
-                            <div className="text-slate-400">Half Wins</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-orange-400 font-bold">{horizonFTGUnderResults["Loss/Push"]}LP</div>
-                            <div className="text-slate-400">Half Loss</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-red-400 font-bold">{horizonFTGUnderResults.Loss}L</div>
-                            <div className="text-slate-400">Full Loss</div>
-                          </div>
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-slate-600/30 flex justify-between">
-                          <span className="text-slate-300">Profit:</span>
-                          <span className={`font-bold ${Number(horizonFTGProfits.underProfit) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {Number(horizonFTGProfits.underProfit) >= 0 ? '+' : ''}{horizonFTGProfits.underProfit}U
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-300">ROI:</span>
-                          <span className={`font-bold ${(() => {
-                            const underPlays = horizonFTGUnderResults.Win + horizonFTGUnderResults["Win/Push"] + horizonFTGUnderResults.Push + horizonFTGUnderResults["Loss/Push"] + horizonFTGUnderResults.Loss;
-                            const roi = underPlays > 0 ? ((Number(horizonFTGProfits.underProfit) / underPlays) * 100) : 0;
-                            return roi >= 0 ? 'text-green-400' : 'text-red-400';
-                          })()}`}>
-                            {(() => {
-                              const underPlays = horizonFTGUnderResults.Win + horizonFTGUnderResults["Win/Push"] + horizonFTGUnderResults.Push + horizonFTGUnderResults["Loss/Push"] + horizonFTGUnderResults.Loss;
-                              const roi = underPlays > 0 ? ((Number(horizonFTGProfits.underProfit) / underPlays) * 100).toFixed(1) : "0";
-                              return roi;
-                            })()}%
-                          </span>
-                        </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-slate-400">Win Rate</div>
+                      <div className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                        {(() => {
+                          // Build Mythos lookup for fast cross-reference
+                          const mythosLookup = new Map();
+                          mythosData.forEach(row => {
+                            const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
+                            mythosLookup.set(key, row);
+                          });
+                          let wins = 0;
+                          let losses = 0;
+                          horizonFHGFiltered.forEach((row) => {
+                            const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
+                            const mythosRow = mythosLookup.get(key);
+                            const firstGoalTime = mythosRow ? mythosRow["First Goal Time"] : undefined;
+                            if (firstGoalTime !== undefined && firstGoalTime !== null && firstGoalTime !== "") {
+                              const fgTimeNum = Number(firstGoalTime);
+                              if (!isNaN(fgTimeNum) && fgTimeNum >= earliestTime && fgTimeNum <= latestTime) {
+                                wins++;
+                              } else if (!isNaN(fgTimeNum) && (fgTimeNum < earliestTime || fgTimeNum > latestTime)) {
+                                losses++;
+                              }
+                            } else {
+                              const fhGoals = Number(row["FH Goals"]);
+                              if (isNaN(fhGoals) || fhGoals === 0) {
+                                losses++;
+                              }
+                            }
+                          });
+                          const totalValid = wins + losses;
+                          return totalValid > 0 ? ((wins / totalValid) * 100).toFixed(1) : "N/A";
+                        })()}%
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                {/* FTC Card - Over/Under breakdown */}
-                <div className="group relative">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
-                  <div className="relative bg-gradient-to-br from-slate-800/90 to-gray-900/90 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-slate-700/20 hover:border-purple-500/30 transition-all duration-300 transform hover:scale-[1.02]">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="p-3 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 shadow-lg">
-                        <div className="text-2xl">🚩</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-slate-400">Corner Bets</div>
-                        <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
-                          {horizonFTCPlays}
-                        </div>
-                      </div>
+                  <h3 className="text-xl font-bold text-white mb-4">Horizon First Half Goal Plays</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Games Analyzed</span>
+                      <span className="font-semibold text-white">{horizonFHGFiltered.length}</span>
                     </div>
-                    
-                    <h3 className="text-xl font-bold text-white mb-4">Horizon FTC</h3>
-                    
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-300">Total Games</span>
-                        <span className="font-semibold text-white">{horizonFTCPlays}</span>
-                      </div>
-                      
-                      {/* Over Section */}
-                      <div className="bg-gradient-to-r from-slate-700/30 to-gray-700/30 rounded-lg p-4 border border-slate-600/20">
-                        <h4 className="text-lg font-semibold text-purple-400 mb-3 flex items-center gap-2">
-                          <span>📈</span> Over Corners
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="text-center">
-                            <div className="text-green-400 font-bold">{horizonFTCFiltered.filter(r => r["FTC"] === "Over" && Number(r["FT Corners"] || 0) > Number(r["Pregame Corner Line"] || 0)).length}</div>
-                            <div className="text-slate-400">Wins</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-red-400 font-bold">{horizonFTCFiltered.filter(r => r["FTC"] === "Over" && Number(r["FT Corners"] || 0) < Number(r["Pregame Corner Line"] || 0)).length}</div>
-                            <div className="text-slate-400">Losses</div>
-                          </div>
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-slate-600/30 flex justify-between">
-                          <span className="text-slate-300">Profit:</span>
-                          <span className={`font-bold ${Number(horizonFTCProfits.overProfit) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {Number(horizonFTCProfits.overProfit) >= 0 ? '+' : ''}{horizonFTCProfits.overProfit}U
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-300">ROI:</span>
-                          <span className={`font-bold ${(() => {
-                            const overPlays = horizonFTCFiltered.filter(r => r["FTC"] === "Over");
-                            const roi = overPlays.length > 0 ? ((Number(horizonFTCProfits.overProfit) / overPlays.length) * 100) : 0;
-                            return roi >= 0 ? 'text-green-400' : 'text-red-400';
-                          })()}`}>
-                            {(() => {
-                              const overPlays = horizonFTCFiltered.filter(r => r["FTC"] === "Over");
-                              const roi = overPlays.length > 0 ? ((Number(horizonFTCProfits.overProfit) / overPlays.length) * 100).toFixed(1) : "0";
-                              return roi;
-                            })()}%
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Under Section */}
-                      <div className="bg-gradient-to-r from-slate-700/30 to-gray-700/30 rounded-lg p-4 border border-slate-600/20">
-                        <h4 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
-                          <span>📉</span> Under Corners
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div className="text-center">
-                            <div className="text-green-400 font-bold">{horizonFTCFiltered.filter(r => r["FTC"] === "Under" && Number(r["FT Corners"] || 0) < Number(r["Pregame Corner Line"] || 0)).length}</div>
-                            <div className="text-slate-400">Wins</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-red-400 font-bold">{horizonFTCFiltered.filter(r => r["FTC"] === "Under" && Number(r["FT Corners"] || 0) > Number(r["Pregame Corner Line"] || 0)).length}</div>
-                            <div className="text-slate-400">Losses</div>
-                          </div>
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-slate-600/30 flex justify-between">
-                          <span className="text-slate-300">Profit:</span>
-                          <span className={`font-bold ${Number(horizonFTCProfits.underProfit) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {Number(horizonFTCProfits.underProfit) >= 0 ? '+' : ''}{horizonFTCProfits.underProfit}U
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-300">ROI:</span>
-                          <span className={`font-bold ${(() => {
-                            const underPlays = horizonFTCFiltered.filter(r => r["FTC"] === "Under");
-                            const roi = underPlays.length > 0 ? ((Number(horizonFTCProfits.underProfit) / underPlays.length) * 100) : 0;
-                            return roi >= 0 ? 'text-green-400' : 'text-red-400';
-                          })()}`}>
-                            {(() => {
-                              const underPlays = horizonFTCFiltered.filter(r => r["FTC"] === "Under");
-                              const roi = underPlays.length > 0 ? ((Number(horizonFTCProfits.underProfit) / underPlays.length) * 100).toFixed(1) : "0";
-                              return roi;
-                            })()}%
-                          </span>
-                        </div>
-                      </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Wins (First Goal in Range)</span>
+                      <span className="font-semibold text-emerald-400">{(() => {
+                        const mythosLookup = new Map();
+                        mythosData.forEach(row => {
+                          const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
+                          mythosLookup.set(key, row);
+                        });
+                        let wins = 0;
+                        horizonFHGFiltered.forEach(row => {
+                          const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
+                          const mythosRow = mythosLookup.get(key);
+                          const firstGoalTime = mythosRow ? mythosRow["First Goal Time"] : undefined;
+                          if (firstGoalTime !== undefined && firstGoalTime !== null && firstGoalTime !== "") {
+                            const fgTimeNum = Number(firstGoalTime);
+                            if (!isNaN(fgTimeNum) && fgTimeNum >= earliestTime && fgTimeNum <= latestTime) {
+                              wins++;
+                            }
+                          }
+                        });
+                        return wins;
+                      })()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Losses (Outside Range or No FHG)</span>
+                      <span className="font-semibold text-red-400">{(() => {
+                        const mythosLookup = new Map();
+                        mythosData.forEach(row => {
+                          const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
+                          mythosLookup.set(key, row);
+                        });
+                        let losses = 0;
+                        horizonFHGFiltered.forEach(row => {
+                          const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
+                          const mythosRow = mythosLookup.get(key);
+                          const firstGoalTime = mythosRow ? mythosRow["First Goal Time"] : undefined;
+                          if (firstGoalTime === undefined || firstGoalTime === null || firstGoalTime === "") {
+                            // No goal time: if FH Goals is 0 or blank, count as loss
+                            const fhGoals = Number(row["FH Goals"]);
+                            if (isNaN(fhGoals) || fhGoals === 0) {
+                              losses++;
+                            }
+                          } else {
+                            const fgTimeNum = Number(firstGoalTime);
+                            if (!isNaN(fgTimeNum) && (fgTimeNum < earliestTime || fgTimeNum > latestTime)) {
+                              losses++;
+                            }
+                          }
+                        });
+                        return losses;
+                      })()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Excluded Wins (No First Goal Time)</span>
+                      <span className="font-semibold text-yellow-400">{(() => {
+                        const mythosLookup = new Map();
+                        mythosData.forEach(row => {
+                          const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
+                          mythosLookup.set(key, row);
+                        });
+                        let excludedWins = 0;
+                        horizonFHGFiltered.forEach(row => {
+                          const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
+                          const mythosRow = mythosLookup.get(key);
+                          const firstGoalTime = mythosRow ? mythosRow["First Goal Time"] : undefined;
+                          if (firstGoalTime === undefined || firstGoalTime === null || firstGoalTime === "") {
+                            const fhGoals = Number(row["FH Goals"]);
+                            if (!isNaN(fhGoals) && fhGoals >= 1) {
+                              excludedWins++;
+                            }
+                          }
+                        });
+                        return excludedWins;
+                      })()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Win Rate</span>
+                      <span className="font-bold text-lg text-emerald-400">
+                        {(() => {
+                          // Build Mythos lookup for fast cross-reference
+                          const mythosLookup = new Map();
+                          mythosData.forEach(row => {
+                            const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
+                            mythosLookup.set(key, row);
+                          });
+                          let wins = 0;
+                          let losses = 0;
+                          horizonFHGFiltered.forEach((row) => {
+                            const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
+                            const mythosRow = mythosLookup.get(key);
+                            const firstGoalTime = mythosRow ? mythosRow["First Goal Time"] : undefined;
+                            if (firstGoalTime !== undefined && firstGoalTime !== null && firstGoalTime !== "") {
+                              const fgTimeNum = Number(firstGoalTime);
+                              if (!isNaN(fgTimeNum) && fgTimeNum >= earliestTime && fgTimeNum <= latestTime) {
+                                wins++;
+                              } else if (!isNaN(fgTimeNum) && (fgTimeNum < earliestTime || fgTimeNum > latestTime)) {
+                                losses++;
+                              }
+                            } else {
+                              const fhGoals = Number(row["FH Goals"]);
+                              if (isNaN(fhGoals) || fhGoals === 0) {
+                                losses++;
+                              }
+                            }
+                          });
+                          const totalValid = wins + losses;
+                          return totalValid > 0 ? ((wins / totalValid) * 100).toFixed(1) : "N/A";
+                        })()}%
+                      </span>
                     </div>
                   </div>
                 </div>
