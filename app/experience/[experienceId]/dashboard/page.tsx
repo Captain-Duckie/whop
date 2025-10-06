@@ -387,14 +387,11 @@ horizonFHGFiltered.forEach(row => {
 const horizonFHGROI = horizonFHGPlays > 0 ? ((horizonFHGTotalProfit / horizonFHGPlays) * 100).toFixed(1) : "0.0";
 // Horizon FTG Stats - Only include games with Over/Under in FTG column and exclude 'Argentine Division 2'
 const horizonFTGFiltered = horizonFiltered.filter(row => (row["FTG"] === "Over" || row["FTG"] === "Under") && row.League !== "Argentine Division 2");
-const horizonFTGPlays = horizonFTGFiltered.length;
 // const horizonFTGWins = horizonFTGFiltered.filter(row => Number(row["FT Goals"] || 0) > Number(row["Pregame Line"] || 0)).length;
-// const horizonFTGPercent = horizonFTGPlays > 0 ? ((horizonFTGWins / horizonFTGPlays) * 100).toFixed(2) : "N/A";
 // Only include games with FTC = "Over" or "Under" for FTC stats
 const horizonFTCFiltered = horizonFiltered.filter(row => row["FTC"] === "Over" || row["FTC"] === "Under");
-const horizonFTCPlays = horizonFTCFiltered.length;
 // const horizonFTCWins = horizonFTCFiltered.filter(row => Number(row["FT Corners"] || 0) > Number(row["Pregame Corner Line"] || 0)).length;
-// const horizonFTCPercent = horizonFTCPlays > 0 ? ((horizonFTCWins / horizonFTCPlays) * 100).toFixed(2) : "N/A";
+
 
 // Asian Total evaluation logic for FTG (filtered)
 function evaluateAsianResult(direction: "Over" | "Under", ftGoals: number, line: number): "Win" | "Loss" | "Win/Push" | "Loss/Push" | "Push" {
@@ -477,7 +474,6 @@ function calculateHorizonFTGProfit() {
         underProfit: underProfit.toFixed(1)
     };
 }
-const horizonFTGProfits = calculateHorizonFTGProfit();
 
 // --- Profit Calculation for Horizon FTC ---
 function calculateHorizonFTCProfit() {
@@ -504,7 +500,6 @@ function calculateHorizonFTCProfit() {
         underProfit: underProfit.toFixed(1)
     };
 }
-const horizonFTCProfits = calculateHorizonFTCProfit();
 
 // --- Double Chance Logic ---
 // Filter Double Chance data from main data array (not horizon)
