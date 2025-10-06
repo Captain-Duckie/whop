@@ -386,120 +386,12 @@ horizonFHGFiltered.forEach(row => {
 
 const horizonFHGROI = horizonFHGPlays > 0 ? ((horizonFHGTotalProfit / horizonFHGPlays) * 100).toFixed(1) : "0.0";
 // Horizon FTG Stats - Only include games with Over/Under in FTG column and exclude 'Argentine Division 2'
-const horizonFTGFiltered = horizonFiltered.filter(row => (row["FTG"] === "Over" || row["FTG"] === "Under") && row.League !== "Argentine Division 2");
-// const horizonFTGWins = horizonFTGFiltered.filter(row => Number(row["FT Goals"] || 0) > Number(row["Pregame Line"] || 0)).length;
-// Only include games with FTC = "Over" or "Under" for FTC stats
-const horizonFTCFiltered = horizonFiltered.filter(row => row["FTC"] === "Over" || row["FTC"] === "Under");
-// const horizonFTCWins = horizonFTCFiltered.filter(row => Number(row["FT Corners"] || 0) > Number(row["Pregame Corner Line"] || 0)).length;
 
 
-// Asian Total evaluation logic for FTG (filtered)
-function evaluateAsianResult(direction: "Over" | "Under", ftGoals: number, line: number): "Win" | "Loss" | "Win/Push" | "Loss/Push" | "Push" {
-    const mod = line % 1;
-    if (mod === 0.25 || mod === 0.75) {
-        const lower = line - 0.25;
-        const upper = line + 0.25;
-        if (direction === "Over") {
-            if (ftGoals > upper) return "Win";
-            if (ftGoals === upper) return "Win/Push";
-            if (ftGoals === lower) return "Loss/Push";
-            return "Loss";
-        } else {
-            if (ftGoals < lower) return "Win";
-            if (ftGoals === lower) return "Win/Push";
-            if (ftGoals === upper) return "Loss/Push";
-            return "Loss";
-        }
-    } else {
-        if (direction === "Over") {
-            if (ftGoals > line) return "Win";
-            if (ftGoals === line) return "Push";
-            return "Loss";
-        } else {
-            if (ftGoals < line) return "Win";
-            if (ftGoals === line) return "Push";
-            return "Loss";
-        }
-    }
-}
-// Horizon FTG Asian Result Stats (only games with Over/Under FTG)
-const horizonFTGOverResults = { Win: 0, "Win/Push": 0, Push: 0, "Loss/Push": 0, Loss: 0 };
-const horizonFTGUnderResults = { Win: 0, "Win/Push": 0, Push: 0, "Loss/Push": 0, Loss: 0 };
-horizonFTGFiltered.forEach(row => {
-    const ftGoals = Number(row["FT Goals"] || 0);
-    const line = Number(row["Pregame Line"] || 0);
-    // Over bet only if row["FTG"] === "Over"
-    if (row["FTG"] === "Over") {
-        const overResult = evaluateAsianResult("Over", ftGoals, line);
-        horizonFTGOverResults[overResult]++;
-    }
-    // Under bet only if row["FTG"] === "Under"
-    if (row["FTG"] === "Under") {
-        const underResult = evaluateAsianResult("Under", ftGoals, line);
-        horizonFTGUnderResults[underResult]++;
-    }
-});
 
-// --- Profit Calculation for Horizon FTG (Asian Totals) ---
-function calculateHorizonFTGProfit() {
-    let overProfit = 0;
-    let underProfit = 0;
 
-    
-    horizonFTGFiltered.forEach(row => {
-        const ftGoals = Number(row["FT Goals"] || 0);
-        const line = Number(row["Pregame Line"] || 0);
-        if (row["FTG"] === "Over") {
-            const odds = Number(row["Over Goal Odds"] || 1.9);
-            const result = evaluateAsianResult("Over", ftGoals, line);
-            if (result === "Win") overProfit += (odds - 1);
-            else if (result === "Win/Push") overProfit += (odds - 1) / 2;
-            else if (result === "Push") overProfit += 0;
-            else if (result === "Loss/Push") overProfit -= 0.5;
-            else if (result === "Loss") overProfit -= 1;
-        }
-        if (row["FTG"] === "Under") {
-            const odds = Number(row["Under Goal Odds"] || 1.9);
-            const result = evaluateAsianResult("Under", ftGoals, line);
-            if (result === "Win") underProfit += (odds - 1);
-            else if (result === "Win/Push") underProfit += (odds - 1) / 2;
-            else if (result === "Push") underProfit += 0;
-            else if (result === "Loss/Push") underProfit -= 0.5;
-            else if (result === "Loss") underProfit -= 1;
-        }
-    });
-    
-    return {
-        overProfit: overProfit.toFixed(1),
-        underProfit: underProfit.toFixed(1)
-    };
-}
 
-// --- Profit Calculation for Horizon FTC ---
-function calculateHorizonFTCProfit() {
-    let overProfit = 0;
-    let underProfit = 0;
-    horizonFTCFiltered.forEach(row => {
-        const ftCorners = Number(row["FT Corners"] || 0);
-        const line = Number(row["Pregame Corner Line"] || 0);
-        if (row["FTC"] === "Over") {
-            const odds = Number(row["Over Corner Odds"] || 0);
-            if (ftCorners > line) overProfit += (odds - 1);
-            else if (ftCorners < line) overProfit -= 1;
-            else overProfit += 0; // Push
-        }
-        if (row["FTC"] === "Under") {
-            const odds = Number(row["Under Corner Odds"] || 0);
-            if (ftCorners < line) underProfit += (odds - 1);
-            else if (ftCorners > line) underProfit -= 1;
-            else underProfit += 0; // Push
-        }
-    });
-    return {
-        overProfit: overProfit.toFixed(1),
-        underProfit: underProfit.toFixed(1)
-    };
-}
+
 
 // --- Double Chance Logic ---
 // Filter Double Chance data from main data array (not horizon)
