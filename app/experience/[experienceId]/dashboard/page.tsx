@@ -1413,7 +1413,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                               const fgTimeNum = Number(firstGoalTime);
                               if (!isNaN(fgTimeNum) && fgTimeNum >= earliestTime && fgTimeNum <= latestTime) {
                                 wins++;
-                              } else if (!isNaN(fgTimeNum) && (fgTimeNum < earliestTime || fgTimeNum > latestTime)) {
+                              } else if (!isNaN(fgTimeNum) && fgTimeNum > latestTime) {
                                 losses++;
                               }
                             } else {
@@ -1479,7 +1479,7 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                             }
                           } else {
                             const fgTimeNum = Number(firstGoalTime);
-                            if (!isNaN(fgTimeNum) && (fgTimeNum < earliestTime || fgTimeNum > latestTime)) {
+                            if (!isNaN(fgTimeNum) && fgTimeNum > latestTime) {
                               losses++;
                             }
                           }
@@ -1509,41 +1509,6 @@ const fhgBefore30MatrixStats = calculateFHGBefore30Matrix();
                         });
                         return excludedWins;
                       })()}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-300">Win Rate</span>
-                      <span className="font-bold text-lg text-emerald-400">
-                        {(() => {
-                          // Build Mythos lookup for fast cross-reference
-                          const mythosLookup = new Map();
-                          mythosData.forEach(row => {
-                            const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
-                            mythosLookup.set(key, row);
-                          });
-                          let wins = 0;
-                          let losses = 0;
-                          horizonFHGFiltered.forEach((row) => {
-                            const key = `${row.Date}_${row.League}_${row["Home Team"]}_${row["Away Team"]}`;
-                            const mythosRow = mythosLookup.get(key);
-                            const firstGoalTime = mythosRow ? mythosRow["First Goal Time"] : undefined;
-                            if (firstGoalTime !== undefined && firstGoalTime !== null && firstGoalTime !== "") {
-                              const fgTimeNum = Number(firstGoalTime);
-                              if (!isNaN(fgTimeNum) && fgTimeNum >= earliestTime && fgTimeNum <= latestTime) {
-                                wins++;
-                              } else if (!isNaN(fgTimeNum) && (fgTimeNum < earliestTime || fgTimeNum > latestTime)) {
-                                losses++;
-                              }
-                            } else {
-                              const fhGoals = Number(row["FH Goals"]);
-                              if (isNaN(fhGoals) || fhGoals === 0) {
-                                losses++;
-                              }
-                            }
-                          });
-                          const totalValid = wins + losses;
-                          return totalValid > 0 ? ((wins / totalValid) * 100).toFixed(1) : "N/A";
-                        })()}%
-                      </span>
                     </div>
                   </div>
                 </div>
